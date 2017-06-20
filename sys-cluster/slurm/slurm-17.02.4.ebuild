@@ -119,6 +119,7 @@ src_configure() {
 		$(use_with json) \
 		$(use_with hdf5) \
 		$(use_with ofed) \
+		$(use_with netloc) \
 		$(use_enable static-libs static) \
 		$(use_enable multiple-slurmd)
 
