@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<use>
+		<flag name="munge">Enable authentication via munge</flag>
+		<flag name="multiple-slurmd">Allow multiple slurmd to run</flag>
+		<flag name="torque">Enable perl scripts that emulates pbs (qstat, qsub etc.)</flag>
+	</use>
+</pkgmetadata>
