@@ -184,16 +184,24 @@ src_install() {
 	doins etc/slurmdbd.conf.example
 	exeinto /etc/slurm
 	doexe etc/slurm.epilog.clean
+	keepdir /etc/slurm/layouts.d
+	insinto /etc/slurm/layouts.d
+	newins etc/layouts.d.power.conf.example power.conf.example
+	newins etc/layouts.d.power_cpufreq.conf.example power_cpufreq.conf.example
+	newins etc/layouts.d.unit.conf.example unit.conf.example
 	# install init.d files
 	newinitd "$(prefixify_ro "${FILESDIR}/slurmd.initd")" slurmd
 	newinitd "$(prefixify_ro "${FILESDIR}/slurmctld.initd")" slurmctld
 	newinitd "$(prefixify_ro "${FILESDIR}/slurmdbd.initd")" slurmdbd
 	# install conf.d files
 	newconfd "${FILESDIR}/slurm.confd" slurm
-	# Install logrotate file
+	# install logrotate file
 	insinto /etc/logrotate.d
 	newins "${FILESDIR}/logrotate" slurm
+	# install systemd files
 	systemd_newtmpfilesd "${FILESDIR}/slurm.tmpfiles" slurm.conf
+	systemd_dounit etc/slurmd.service etc/slurmctld.service etc/slurmdbd.service
+
 }
 
 pkg_preinst() {
