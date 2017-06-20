@@ -18,20 +18,20 @@ else
 	MY_P="${PN}-${MY_PV}"
 	INHERIT_GIT=""
 	SRC_URI="http://www.schedmd.com/download/latest/${MY_P}.tar.bz2"
-	KEYWORDS="~amd64 ~x86"
+	KEYWORDS="~amd64"
 	S="${WORKDIR}/${MY_P}"
 fi
 
-inherit autotools eutils pam perl-module user prefix ${INHERIT_GIT}
+inherit autotools eutils pam perl-module user prefix systemd ${INHERIT_GIT}
 
 DESCRIPTION="SLURM: A Highly Scalable Resource Manager"
 HOMEPAGE="http://www.schedmd.com"
 
 LICENSE="GPL-2"
 SLOT="0"
-IUSE="lua multiple-slurmd +munge mysql pam perl ssl static-libs torque"
+IUSE="hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa ofed pam perl ssl static-libs torque"
 
-DEPEND="
+CDEPEND="
 	!sys-cluster/torque
 	!net-analyzer/slurm
 	!net-analyzer/sinfo
@@ -40,9 +40,19 @@ DEPEND="
 	pam? ( virtual/pam )
 	ssl? ( dev-libs/openssl:0= )
 	lua? ( dev-lang/lua:0= )
-	!lua? ( !dev-lang/lua )
-	>=sys-apps/hwloc-1.1.1-r1"
-RDEPEND="${DEPEND}
+	ipmi? ( sys-libs/freeipmi )
+	json? ( dev-libs/json-c:= )
+	netloc? ( sys-apps/netloc )
+	hdf5? ( sci-libs/hdf5:= )
+	numa? ( sys-process/numactl )
+	ofed? ( sys-fabric/ofed )
+	>=sys-apps/hwloc-1.1.1-r1
+	sys-libs/ncurses:0=
+	app-arch/lz4:0=
+	sys-libs/readline:0="
+DEPEND="${CDEPEND}
+	html? ( sys-apps/man2html )"
+RDEPEND="${CDEPEND}
 	dev-libs/libcgroup"
 
 REQUIRED_USE="torque? ( perl )"
@@ -95,17 +105,20 @@ src_prepare() {
 
 src_configure() {
 	local myconf=(
-			--sysconfdir="${EPREFIX}/etc/${PN}"
-			--with-hwloc="${EPREFIX}/usr"
-			--docdir="${EPREFIX}/usr/share/doc/${P}"
-			--htmldir="${EPREFIX}/usr/share/doc/${P}"
-			)
+		--sysconfdir="${EPREFIX}/etc/slurm"
+		--with-hwloc="${EPREFIX}/usr"
+		--docdir="${EPREFIX}/usr/share/doc/${P}"
+		--htmldir="${EPREFIX}/usr/share/doc/${P}"
+	)
 	use pam && myconf+=( --with-pam_dir=$(getpam_mod_dir) )
 	use mysql || myconf+=( --without-mysql_config )
 	econf "${myconf[@]}" \
 		$(use_enable pam) \
 		$(use_with ssl) \
 		$(use_with munge) \
+		$(use_with json) \
+		$(use_with hdf5) \
+		$(use_with ofed) \
 		$(use_enable static-libs static) \
 		$(use_enable multiple-slurmd)
 
@@ -130,6 +143,7 @@ src_configure() {
 
 src_compile() {
 	default
+
 	use pam && emake -C contribs/pam
 	if use perl ; then
 		cd "${LIBSLURM_PERL_S}"
@@ -145,6 +159,7 @@ src_compile() {
 
 src_install() {
 	default
+
 	use pam && emake DESTDIR="${D}" -C contribs/pam install
 	if use perl; then
 		cd "${LIBSLURM_PERL_S}"
@@ -177,6 +192,7 @@ src_install() {
 	# Install logrotate file
 	insinto /etc/logrotate.d
 	newins "${FILESDIR}/logrotate" slurm
+	systemd_newtmpfilesd "${FILESDIR}/slurm.tmpfiles" slurm.conf
 }
 
 pkg_preinst() {
@@ -188,45 +204,42 @@ pkg_preinst() {
 create_folders_and_fix_permissions() {
 	einfo "Fixing permissions in ${@}"
 	mkdir -p ${@}
-	chown -R ${PN}:${PN} ${@}
+	chown -R slurm:slurm ${@}
 }
 
 pkg_postinst() {
 	paths=(
-		"${EROOT}"var/${PN}/checkpoint
-		"${EROOT}"var/${PN}
-		"${EROOT}"var/spool/${PN}/slurmd
-		"${EROOT}"var/spool/${PN}
-		"${EROOT}"var/run/${PN}
-		"${EROOT}"var/log/${PN}
-		/var/tmp/${PN}/${PN}d
-		/var/tmp/${PN}
-		)
+		"${EROOT}"var/slurm/checkpoint
+		"${EROOT}"var/slurm
+		"${EROOT}"var/spool/slurm/slurmd
+		"${EROOT}"var/spool/slurm
+		"${EROOT}"var/log/slurm
+		/var/tmp/slurm/slurmd
+		/var/tmp/slurm
+		/run/slurm
+	)
 	for folder_path in ${paths[@]}; do
 		create_folders_and_fix_permissions $folder_path
 	done
-	einfo
 
+	einfo
 	elog "Please visit the file '/usr/share/doc/${P}/html/configurator.html"
 	elog "through a (javascript enabled) browser to create a configureation file."
 	elog "Copy that file to /etc/slurm/slurm.conf on all nodes (including the headnode) of your cluster."
 	einfo
 	elog "For cgroup support, please see http://www.schedmd.com/slurmdocs/cgroup.conf.html"
 	elog "Your kernel must be compiled with the wanted cgroup feature:"
-	elog "    General setup  --->"
-	elog "        [*] Control Group support  --->"
-	elog "            [*]   Freezer cgroup subsystem"
-	elog "            [*]   Device controller for cgroups"
-	elog "            [*]   Cpuset support"
-	elog "            [*]   Simple CPU accounting cgroup subsystem"
-	elog "            [*]   Resource counters"
-	elog "            [*]     Memory Resource Controller for Control Groups"
-	elog "            [*]   Group CPU scheduler  --->"
-	elog "                [*]   Group scheduling for SCHED_OTHER"
+	elog "    For the proctrack plugin:"
+	elog "        freezer"
+	elog "    For the task plugin:"
+	elog "        cpuset, memory, devices"
+	elog "    For the accounting plugin:"
+	elog "        cpuacct, memory, blkio"
 	elog "Then, set these options in /etc/slurm/slurm.conf:"
 	elog "    ProctrackType=proctrack/cgroup"
 	elog "    TaskPlugin=task/cgroup"
 	einfo
+
 	ewarn "Paths were created for slurm. Please use these paths in /etc/slurm/slurm.conf:"
 	for folder_path in ${paths[@]}; do
 		ewarn "    ${folder_path}"
