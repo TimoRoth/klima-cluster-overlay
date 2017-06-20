@@ -89,6 +89,9 @@ src_prepare() {
 		-e "s:/var/run/slurmd.pid:${EPREFIX}/run/slurm/slurmd.pid:g" \
 		-i "${S}/etc/slurm.conf.example" \
 			|| die "Can't sed for /var/run/slurmctld.pid"
+	sed -i "s:/var/run/slurmdbd.pid:${EPREFIX}/run/slurm/slurmdbd.pid:g" \
+		-i "${S}/etc/slurmdbd.conf.example" \
+			|| die "Can't sed for /var/run/slurmdbd.pid"
 	# also state dirs are in /var/spool/slurm
 	sed -e "s:StateSaveLocation=*.:StateSaveLocation=${EPREFIX}/var/spool/slurm:g" \
 		-e "s:SlurmdSpoolDir=*.:SlurmdSpoolDir=${EPREFIX}/var/spool/slurm/slurmd:g" \
@@ -98,6 +101,11 @@ src_prepare() {
 	sed -e 's:/tmp:/var/tmp:g' \
 		-i "${S}/etc/slurm.conf.example" \
 			|| die "Can't sed for StateSaveLocation=*./tmp"
+	# gentooify systemd services
+	sed -e 's:sysconfig/.*:conf.d/slurm:g' \
+		-e 's:var/run/:run/slurm/:g' \
+		-i "${S}/etc"/*.service.in \
+			|| die "Can't sed systemd services for sysconfig or var/run/"
 
 	hprefixify auxdir/{ax_check_zlib,x_ac_{lz4,ofed,munge}}.m4
 	eautoreconf
@@ -201,7 +209,6 @@ src_install() {
 	# install systemd files
 	systemd_newtmpfilesd "${FILESDIR}/slurm.tmpfiles" slurm.conf
 	systemd_dounit etc/slurmd.service etc/slurmctld.service etc/slurmdbd.service
-
 }
 
 pkg_preinst() {
