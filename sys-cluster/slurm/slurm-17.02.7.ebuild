@@ -64,7 +64,6 @@ RESTRICT="primaryuri"
 
 PATCHES=(
 	"${FILESDIR}/${P}-disable-sview.patch"
-	"${FILESDIR}/${P}-glibc-2.25.patch"
 )
 
 src_unpack() {
