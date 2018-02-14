@@ -139,15 +139,15 @@ src_configure() {
 	sed -e "s|htmldir = .*/html|htmldir = \${prefix}/share/doc/slurm-${PVR}/html|g" -i doc/html/Makefile || die
 	if use perl ; then
 		# small hack to make it compile
-		mkdir -p "${S}/src/api/.libs"
-		mkdir -p "${S}/src/db_api/.libs"
-		touch "${S}/src/api/.libs/libslurm.so"
-		touch "${S}/src/db_api/.libs/libslurmdb.so"
-		cd "${LIBSLURM_PERL_S}"
+		mkdir -p "${S}/src/api/.libs" || die "mkdir failed"
+		mkdir -p "${S}/src/db_api/.libs" || die "mkdir failed"
+		touch "${S}/src/api/.libs/libslurm.so" || die "touch tailed"
+		touch "${S}/src/db_api/.libs/libslurmdb.so" || die "touch failed"
+		cd "${LIBSLURM_PERL_S}" || die "cd failed"
 		S="${LIBSLURM_PERL_S}" SRC_PREP="no" perl-module_src_configure
-		cd "${LIBSLURMDB_PERL_S}"
+		cd "${LIBSLURMDB_PERL_S}" || die "cd failed"
 		S="${LIBSLURMDB_PERL_S}" SRC_PREP="no" perl-module_src_configure
-		cd "${S}"
+		cd "${S}" || die "cd failed"
 		rm -rf "${S}/src/api/.libs" "${S}/src/db_api/.libs"
 	fi
 }
