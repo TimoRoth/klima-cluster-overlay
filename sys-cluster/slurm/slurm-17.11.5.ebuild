@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=6
@@ -17,35 +17,38 @@ else
 	fi
 	MY_P="${PN}-${MY_PV}"
 	INHERIT_GIT=""
-	SRC_URI="http://www.schedmd.com/download/latest/${MY_P}.tar.bz2"
-	KEYWORDS="~amd64"
+	SRC_URI="https://download.schedmd.com/slurm/${MY_P}.tar.bz2"
+	KEYWORDS="~amd64 ~x86"
 	S="${WORKDIR}/${MY_P}"
 fi
 
-inherit autotools eutils pam perl-module user prefix systemd ${INHERIT_GIT}
+inherit autotools bash-completion-r1 eutils pam perl-module prefix user systemd ${INHERIT_GIT}
 
-DESCRIPTION="SLURM: A Highly Scalable Resource Manager"
-HOMEPAGE="http://www.schedmd.com"
+DESCRIPTION="A Highly Scalable Resource Manager"
+HOMEPAGE="https://www.schedmd.com"
 
 LICENSE="GPL-2"
 SLOT="0"
-IUSE="hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa ofed pam perl ssl static-libs torque"
+IUSE="debug hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa ofed pam perl ssl static-libs torque X"
 
 CDEPEND="
 	!sys-cluster/torque
 	!net-analyzer/slurm
 	!net-analyzer/sinfo
+	sys-cluster/pmix[-pmi]
 	mysql? ( virtual/mysql )
 	munge? ( sys-auth/munge )
 	pam? ( virtual/pam )
 	ssl? ( dev-libs/openssl:0= )
 	lua? ( dev-lang/lua:0= )
+	!lua? ( !dev-lang/lua )
 	ipmi? ( sys-libs/freeipmi )
 	json? ( dev-libs/json-c:= )
-	netloc? ( sys-apps/netloc )
+	amd64? ( netloc? ( sys-apps/netloc ) )
 	hdf5? ( sci-libs/hdf5:= )
 	numa? ( sys-process/numactl )
 	ofed? ( sys-fabric/ofed )
+	X? ( net-libs/libssh2 )
 	>=sys-apps/hwloc-1.1.1-r1
 	sys-libs/ncurses:0=
 	app-arch/lz4:0=
@@ -60,13 +63,11 @@ REQUIRED_USE="torque? ( perl )"
 LIBSLURM_PERL_S="${WORKDIR}/${MY_P}/contribs/perlapi/libslurm/perl"
 LIBSLURMDB_PERL_S="${WORKDIR}/${MY_P}/contribs/perlapi/libslurmdb/perl"
 
-RESTRICT="primaryuri"
+RESTRICT="primaryuri test"
 
 PATCHES=(
 	"${FILESDIR}/slurm-17.02.9-disable-sview.patch"
 )
-
-S="${WORKDIR}/${MY_P}"
 
 src_unpack() {
 	if [[ ${PV} == *9999* ]]; then
@@ -82,10 +83,8 @@ pkg_setup() {
 }
 
 src_prepare() {
-	if [ ${#PATCHES[0]} -ne 0 ]; then
-		epatch "${PATCHES[@]}"
-	fi
-	eapply_user
+	default
+
 	# pids should go to /var/run/slurm
 	sed -e "s:/var/run/slurmctld.pid:${EPREFIX}/run/slurm/slurmctld.pid:g" \
 		-e "s:/var/run/slurmd.pid:${EPREFIX}/run/slurm/slurmd.pid:g" \
@@ -114,70 +113,70 @@ src_prepare() {
 }
 
 src_configure() {
+	use debug || myconf+=( --disable-debug )
 	local myconf=(
-		--sysconfdir="${EPREFIX}/etc/slurm"
+		--sysconfdir="${EPREFIX}/etc/${PN}"
 		--with-hwloc="${EPREFIX}/usr"
 		--docdir="${EPREFIX}/usr/share/doc/${P}"
 		--htmldir="${EPREFIX}/usr/share/doc/${P}"
 	)
 	use pam && myconf+=( --with-pam_dir=$(getpam_mod_dir) )
 	use mysql || myconf+=( --without-mysql_config )
+	use amd64 && myconf+=( $(use_with netloc) )
 	econf "${myconf[@]}" \
 		$(use_enable pam) \
+		$(use_enable X x11) \
 		$(use_with ssl) \
 		$(use_with munge) \
 		$(use_with json) \
 		$(use_with hdf5) \
 		$(use_with ofed) \
-		$(use_with netloc) \
 		$(use_enable static-libs static) \
 		$(use_enable multiple-slurmd)
 
 	# --htmldir does not seems to propagate... Documentations are installed
 	# in /usr/share/doc/slurm-2.3.0/html
 	# instead of /usr/share/doc/slurm-2.3.0.2/html
-	sed -e "s|htmldir = .*/html|htmldir = \${prefix}/share/doc/slurm-${PVR}/html|g" -i doc/html/Makefile || die
+	sed \
+		-e "s|htmldir = .*/html|htmldir = \${prefix}/share/doc/slurm-${PVR}/html|g" \
+		-i doc/html/Makefile || die
 	if use perl ; then
 		# small hack to make it compile
-		mkdir -p "${S}/src/api/.libs" || die "mkdir failed"
-		mkdir -p "${S}/src/db_api/.libs" || die "mkdir failed"
-		touch "${S}/src/api/.libs/libslurm.so" || die "touch tailed"
-		touch "${S}/src/db_api/.libs/libslurmdb.so" || die "touch failed"
-		cd "${LIBSLURM_PERL_S}" || die "cd failed"
+		mkdir -p "${S}/src/api/.libs" || die
+		mkdir -p "${S}/src/db_api/.libs" || die
+		touch "${S}/src/api/.libs/libslurm.so" || die
+		touch "${S}/src/db_api/.libs/libslurmdb.so" || die
+		cd "${LIBSLURM_PERL_S}" || die
 		S="${LIBSLURM_PERL_S}" SRC_PREP="no" perl-module_src_configure
-		cd "${LIBSLURMDB_PERL_S}" || die "cd failed"
+		cd "${LIBSLURMDB_PERL_S}" || die
 		S="${LIBSLURMDB_PERL_S}" SRC_PREP="no" perl-module_src_configure
-		cd "${S}" || die "cd failed"
-		rm -rf "${S}/src/api/.libs" "${S}/src/db_api/.libs"
+		cd "${S}" || die
+		rm -rf "${S}/src/api/.libs" "${S}/src/db_api/.libs" || die
 	fi
 }
 
 src_compile() {
 	default
-
 	use pam && emake -C contribs/pam
 	if use perl ; then
-		cd "${LIBSLURM_PERL_S}"
+		cd "${LIBSLURM_PERL_S}" || die
 		S="${LIBSLURM_PERL_S}" perl-module_src_compile
-		cd "${LIBSLURMDB_PERL_S}"
+		cd "${LIBSLURMDB_PERL_S}" || die
 		S="${LIBSLURMDB_PERL_S}" perl-module_src_compile
-		cd "${S}"
+		cd "${S}" || die
 	fi
-	if use torque ; then
-		emake -C contribs/torque
-	fi
+	use torque && emake -C contribs/torque
 }
 
 src_install() {
 	default
-
 	use pam && emake DESTDIR="${D}" -C contribs/pam install
 	if use perl; then
-		cd "${LIBSLURM_PERL_S}"
+		cd "${LIBSLURM_PERL_S}" || die
 		S="${LIBSLURM_PERL_S}" perl-module_src_install
-		cd "${LIBSLURMDB_PERL_S}"
+		cd "${LIBSLURMDB_PERL_S}" || die
 		S="${LIBSLURMDB_PERL_S}" perl-module_src_install
-		cd "${S}"
+		cd "${S}" || die
 	fi
 	if use torque; then
 		emake DESTDIR="${D}" -C contribs/torque
@@ -187,13 +186,15 @@ src_install() {
 	# install sample configs
 	keepdir /etc/slurm
 	insinto /etc/slurm
-	doins etc/bluegene.conf.example
-	doins etc/cgroup.conf.example
-	doins etc/cgroup_allowed_devices_file.conf.example
-	doins etc/slurm.conf.example
-	doins etc/slurmdbd.conf.example
+	doins \
+		etc/bluegene.conf.example \
+		etc/cgroup.conf.example \
+		etc/cgroup_allowed_devices_file.conf.example \
+		etc/slurm.conf.example \
+		etc/slurmdbd.conf.example
 	exeinto /etc/slurm
-	doexe etc/slurm.epilog.clean
+	doexe \
+		etc/slurm.epilog.clean
 	keepdir /etc/slurm/layouts.d
 	insinto /etc/slurm/layouts.d
 	newins etc/layouts.d.power.conf.example power.conf.example
@@ -208,6 +209,11 @@ src_install() {
 	# install logrotate file
 	insinto /etc/logrotate.d
 	newins "${FILESDIR}/logrotate" slurm
+	# install bashcomp
+	newbashcomp contribs/slurm_completion_help/slurm_completion.sh scontrol
+	bashcomp_alias scontrol \
+		sreport sacctmgr squeue scancel sshare sbcast sinfo \
+		sprio sacct salloc sbatch srun sattach sdiag sstat
 	# install systemd files
 	systemd_newtmpfilesd "${FILESDIR}/slurm.tmpfiles" slurm.conf
 	systemd_dounit etc/slurmd.service etc/slurmctld.service etc/slurmdbd.service
@@ -222,19 +228,19 @@ pkg_preinst() {
 create_folders_and_fix_permissions() {
 	einfo "Fixing permissions in ${@}"
 	mkdir -p ${@}
-	chown -R slurm:slurm ${@}
+	chown -R ${PN}:${PN} ${@}
 }
 
 pkg_postinst() {
 	paths=(
-		"${EROOT}"var/slurm/checkpoint
-		"${EROOT}"var/slurm
-		"${EROOT}"var/spool/slurm/slurmd
-		"${EROOT}"var/spool/slurm
-		"${EROOT}"var/log/slurm
-		/var/tmp/slurm/slurmd
-		/var/tmp/slurm
-		/run/slurm
+		"${EROOT}"var/${PN}/checkpoint
+		"${EROOT}"var/${PN}
+		"${EROOT}"var/spool/${PN}/slurmd
+		"${EROOT}"var/spool/${PN}
+		"${EROOT}"var/log/${PN}
+		/var/tmp/${PN}/${PN}d
+		/var/tmp/${PN}
+		/run/${PN}
 	)
 	for folder_path in ${paths[@]}; do
 		create_folders_and_fix_permissions $folder_path
@@ -245,7 +251,7 @@ pkg_postinst() {
 	elog "through a (javascript enabled) browser to create a configureation file."
 	elog "Copy that file to /etc/slurm/slurm.conf on all nodes (including the headnode) of your cluster."
 	einfo
-	elog "For cgroup support, please see http://www.schedmd.com/slurmdocs/cgroup.conf.html"
+	elog "For cgroup support, please see https://www.schedmd.com/slurmdocs/cgroup.conf.html"
 	elog "Your kernel must be compiled with the wanted cgroup feature:"
 	elog "    For the proctrack plugin:"
 	elog "        freezer"
