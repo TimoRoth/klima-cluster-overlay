@@ -8,6 +8,7 @@ if [[ ${PV} == *9999* ]]; then
 	INHERIT_GIT="git-r3"
 	SRC_URI=""
 	KEYWORDS=""
+	MY_P="slurm"
 else
 	inherit versionator
 	if [[ ${PV} == *pre* || ${PV} == *rc* ]]; then
@@ -19,7 +20,6 @@ else
 	INHERIT_GIT=""
 	SRC_URI="https://download.schedmd.com/slurm/${MY_P}.tar.bz2"
 	KEYWORDS="~amd64 ~x86"
-	S="${WORKDIR}/${MY_P}"
 fi
 
 inherit autotools bash-completion-r1 eutils pam perl-module prefix user systemd ${INHERIT_GIT}
@@ -68,6 +68,8 @@ RESTRICT="primaryuri test"
 PATCHES=(
 	"${FILESDIR}/slurm-17.02.9-disable-sview.patch"
 )
+
+S="${WORKDIR}/${MY_P}"
 
 src_unpack() {
 	if [[ ${PV} == *9999* ]]; then
