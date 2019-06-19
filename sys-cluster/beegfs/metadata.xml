@@ -13,5 +13,6 @@
 		<flag name="mon">Include mon service</flag>
 		<flag name="admon">Include admon service</flag>
 		<flag name="admon-gui">Include Java-Based admon-gui</flag>
+		<flag name="beeond">Include beeond scripts</flag>
 	</use>
 </pkgmetadata>

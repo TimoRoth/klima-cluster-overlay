@@ -14,8 +14,10 @@ EGIT_COMMIT="${PV}"
 LICENSE="BeeGFS-EULA"
 SLOT="0"
 KEYWORDS="~amd64"
-IUSE="+client +utils ib upgraders helperd meta storage mgmtd mon admon admon-gui java bash-completion"
-REQUIRED_USE="admon-gui? ( java )"
+IUSE="+client +utils ib upgraders helperd meta storage mgmtd mon admon admon-gui java beeond bash-completion"
+REQUIRED_USE="
+	admon-gui? ( java )
+	beeond? ( utils mgmtd meta storage client helperd )"
 
 DEPEND="
 	sys-apps/attr
@@ -76,25 +78,19 @@ src_compile() {
 		beegfs_emake -C common/build libbeegfs_ib.so
 	fi
 
-	if use utils; then
-		einfo "Building utils..."
-		beegfs_emake utils
-	fi
-
+	main_targets="$(usex utils "utils " "")"
 	for comp in helperd meta storage mgmtd mon; do
-		use "${comp}" || continue
-		einfo "Building ${comp}..."
-		beegfs_emake "${comp}-all"
+		main_targets+="$(usex "${comp}" "${comp}-all " "")"
 	done
+
+	if [[ -n "${main_targets}" ]]; then
+		einfo "Building tools and services..."
+		beegfs_emake ${main_targets}
+	fi
 
 	if use upgraders; then
 		einfo "Building upgraders..."
 		beegfs_emake -C upgrade/beegfs_mirror_md/build all
-	fi
-
-	if use admon; then
-		einfo "Building admon..."
-		beegfs_emake -C admon/build all
 	fi
 
 	if use java; then
@@ -102,9 +98,14 @@ src_compile() {
 		beegfs_emake -C java_lib/build
 	fi
 
-	if use admon-gui; then
-		einfo "Building admon-gui..."
-		beegfs_emake -C admon/build admon_gui
+	if use admon || use admon-gui; then
+		einfo "Building admon..."
+		beegfs_emake -C admon/build $(usex admon all "") $(usex admon-gui admon_gui "")
+	fi
+
+	if use beeond; then
+		einfo "Building beeond..."
+		beegfs_emake -C beeond_thirdparty_gpl/build
 	fi
 }
 
@@ -216,8 +217,26 @@ src_install() {
 		doins admon_gui/dist/beegfs-admon-gui.jar
 	fi
 
+	if use beeond; then
+		einfo "Installing beeond..."
+
+		exeinto /opt/beegfs/thirdparty
+		doexe beeond_thirdparty_gpl/build/parallel
+
+		exeinto /opt/beegfs/sbin
+		doexe beeond/source/beeond{,-cp}
+
+		insinto /opt/beegfs/lib
+		doins -r beeond/scripts/lib/*
+
+		mkdir -p "${ED}"/usr/bin || die
+		ln -s "${EPREFIX}"/opt/beegfs/sbin/beeond "${ED}"/usr/bin/beeond || die
+		ln -s "${EPREFIX}"/opt/beegfs/sbin/beeond-cp "${ED}"/usr/bin/beeond-cp || die
+	fi
+
 	if use bash-completion && use utils; then
 		echo "Installing beegfs-ctl bash-completions..."
+
 		newbashcomp utils/scripts/etc/bash_completion.d/beegfs-ctl beegfs-ctl
 	fi
 }
