@@ -23,9 +23,6 @@ RDMA_CORE_INSTALL_TARGETS_NATIVE=(
 	libibverbs/examples/install
 	libibverbs/man/install
 )
-RDMA_CORE_TARGETS_STATIC=(
-	ibverbs-static
-)
 
 inherit rdma-core
 
@@ -42,7 +39,7 @@ multilib_src_install()
 
 	# Install files with no associated target
 	use static-libs &&
-		dolib.a lib/statics/libibverbs.a
+		dolib.a lib/libibverbs.a
 
 	insinto /usr/$(get_libdir)/pkgconfig
 	doins lib/pkgconfig/libibverbs.pc

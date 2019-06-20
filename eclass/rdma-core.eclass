@@ -29,6 +29,9 @@ esac
 # @ECLASS-VARIABLE: RDMA_CORE_TARGETS_STATIC
 # @DESCRIPTION:
 # Bash array of additional cmake targets to build when building static-libs.
+# Since the rdma-core buildsystem does not allow not building (and installing)
+# individual static libraries, all of them will have to be built, always.
+: ${RDMA_CORE_TARGETS_STATIC:=make_static}
 
 # @ECLASS-VARIABLE: RDMA_CORE_INSTALL_TARGETS_STATIC
 # @DESCRIPTION:
