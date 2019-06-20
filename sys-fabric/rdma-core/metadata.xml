@@ -4,5 +4,6 @@
 	<use>
 		<flag name="neigh">Use libnl for neighbour discovery</flag>
 		<flag name="valgrind">Enable built-in valgrind support</flag>
+		<flag name="python">Build python pyverbs library</flag>
 	</use>
 </pkgmetadata>
