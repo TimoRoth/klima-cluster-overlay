@@ -47,7 +47,9 @@ if [[ ${#RDMA_CORE_TARGETS_NATIVE[@]} != 0 || ${#RDMA_CORE_INSTALL_TARGETS_NATIV
 	RDMA_CORE_MULTILIB=1
 fi
 
-inherit eutils cmake-utils
+PYTHON_COMPAT=( python3_{5,6,7} )
+
+inherit eutils cmake-utils python-any-r1
 
 if [[ "${RDMA_CORE_MULTILIB}" != "0" ]]; then
 	inherit multilib-minimal cmake-multilib
@@ -59,28 +61,31 @@ HOMEPAGE="https://github.com/linux-rdma/rdma-core"
 LICENSE="|| ( GPL-2 BSD-2 )"
 SRC_URI="https://github.com/linux-rdma/rdma-core/releases/download/v${PV}/rdma-core-${PV}.tar.gz"
 
-IUSE="+neigh valgrind"
+IUSE="+neigh systemd valgrind"
 
 DEPEND="
 	virtual/libudev:=
 	neigh? ( dev-libs/libnl:3 )
+	systemd? ( sys-apps/systemd:= )
 	valgrind? ( dev-util/valgrind )"
 RDEPEND="${DEPEND}"
+BDEPEND="${PYTHON_DEPS}"
 
 S="${WORKDIR}/rdma-core-${PV}"
 
 rdma-core_src_configure() {
 	local mycmakeargs=(
 		-DCMAKE_DISABLE_FIND_PACKAGE_pandoc=ON
-		-DENABLE_VALGRIND="$(usex valgrind)"
-		-DENABLE_RESOLVE_NEIGH="$(usex neigh)"
+		-DCMAKE_DISABLE_FIND_PACKAGE_Systemd="$(usex systemd OFF ON)"
+		-DENABLE_VALGRIND="$(usex valgrind ON OFF)"
+		-DENABLE_RESOLVE_NEIGH="$(usex neigh ON OFF)"
 	)
 
 	ver_test -ge 25 &&
 		mycmakeargs+=( -DCMAKE_DISABLE_FIND_PACKAGE_rst2man=ON )
 
 	has static-libs ${IUSE} &&
-		mycmakeargs+=( -DENABLE_STATIC="$(usex static-libs)" )
+		mycmakeargs+=( -DENABLE_STATIC="$(usex static-libs ON OFF)" )
 
 	if [[ "${RDMA_CORE_MULTILIB}" != "0" ]]; then
 		cmake-multilib_src_configure
