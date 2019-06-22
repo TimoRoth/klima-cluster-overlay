@@ -32,6 +32,7 @@ RDEPEND="${CDEPEND}
 	!sys-fabric/ibacm
 	!sys-fabric/libibmad
 	!sys-fabric/srptools
+	!sys-fabric/infinipath-psm
 	!sys-fabric/libcxgb3
 	!sys-fabric/libcxgb4
 	!sys-fabric/libmthca
