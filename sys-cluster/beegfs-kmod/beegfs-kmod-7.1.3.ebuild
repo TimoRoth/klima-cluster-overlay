@@ -29,6 +29,11 @@ beegfs_version_check() {
 		ewarn ""
 		ewarn "Other kernels are not tested against and do not get any compatiblity fixes."
 	fi
+
+	if use ib; then
+		local CONFIG_CHECK="INFINIBAND INFINIBAND_ADDR_TRANS INFINIBAND_USER_MAD INFINIBAND_USER_ACCESS"
+		check_extra_config
+	fi
 }
 
 pkg_pretend() {
