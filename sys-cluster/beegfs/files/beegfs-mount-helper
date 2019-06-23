@@ -16,8 +16,11 @@ exec_mount_hook() {
 }
 
 start() {
-	ret=0
-	cat $BEEGFS_MOUNT_CONF | while IFS= read -r line; do
+	local ret=0
+
+	while IFS= read -r line; do
+		echo $ret
+
 		[ -z "$line" ] && continue
 
 		mnt="$(echo "$line" | awk '{print $1}')"
@@ -48,14 +51,17 @@ start() {
 		else
 			echo "Failed mounting \"$mnt\""
 			ret=1
+			continue
 		fi
-	done
+	done < $BEEGFS_MOUNT_CONF
+
 	return $ret
 }
 
 stop() {
-	ret=0
-	tac $BEEGFS_MOUNT_CONF | while IFS= read -r line; do
+	local ret=0
+
+	while IFS= read -r line; do
 		[ -z "$line" ] && continue
 
 		mnt="$(echo "$line" | awk '{print $1}')"
@@ -77,7 +83,7 @@ stop() {
 				ret=1
 			fi
 		fi
-	done
+	done <<< "$(tac $BEEGFS_MOUNT_CONF)"
 
 	if ! mount -t beegfs | grep beegfs >/dev/null 2>&1; then
 		if ! modprobe -r beegfs; then
@@ -93,12 +99,15 @@ set -e
 
 case "$1" in
 	start)
-		start()
+		start
+		exit $?
 		;;
 	stop)
-		stop()
+		stop
+		exit $?
 		;;
 	restart)
-		stop() && start()
+		stop && start
+		exit $?
 		;;
 esac
