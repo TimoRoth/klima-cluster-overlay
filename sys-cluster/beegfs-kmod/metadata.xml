@@ -3,6 +3,5 @@
 <pkgmetadata>
 	<use>
 		<flag name="ib">Include InfiniBand support</flag>
-		<flag name="ofed">Use sys-fabric/ofed instead of in-kernel ib stack</flag>
 	</use>
 </pkgmetadata>
