@@ -25,26 +25,13 @@ DEPEND="
 	sys-libs/zlib:=
 	dev-db/sqlite:3
 	net-misc/curl[curl_ssl_openssl]
-	storage?
-	(
-		sys-fs/xfsprogs
-	)
-	ib?
-	(
-		sys-fabric/librdmacm
-		sys-fabric/libibverbs
-	)
-	java?
-	(
-		>=virtual/jdk-1.6:*
-	)
-	admon-gui?
-	(
-		dev-java/ant
-	)"
+	storage? ( sys-fs/xfsprogs )
+	ib?	( sys-fabric/rdma-core:= )
+	java? ( >=virtual/jdk-1.6:* )"
 RDEPEND="${DEPEND}
 	client? ( =sys-cluster/beegfs-kmod-${PV}*[ib=] )"
-BDEPEND=""
+BDEPEND="
+	admon-gui? ( dev-java/ant )"
 
 beegfs_emake() {
 	# - A lot of code and guides for beegfs assume binaries and scripts to reside in /opt/beegfs.
@@ -63,10 +50,6 @@ beegfs_emake() {
 }
 
 src_compile() {
-	# This produces a ton of very verbose warnings.
-	# Disabling the warning to keep build log readable.
-	append-cxxflags -Wno-class-memaccess
-
 	einfo "Building thirdparty dependencies..."
 	beegfs_emake thirdparty
 
@@ -78,14 +61,14 @@ src_compile() {
 		beegfs_emake -C common/build libbeegfs_ib.so
 	fi
 
-	main_targets="$(usex utils "utils " "")"
+	main_targets=( $(usex utils "utils " "") )
 	for comp in helperd meta storage mgmtd mon; do
-		main_targets+="$(usex "${comp}" "${comp}-all " "")"
+		main_targets+=( $(usex "${comp}" "${comp}-all " "") )
 	done
 
-	if [[ -n "${main_targets}" ]]; then
+	if [[ ${#main_targets[@]} != 0 ]]; then
 		einfo "Building tools and services..."
-		beegfs_emake ${main_targets}
+		beegfs_emake "${main_targets[@]}"
 	fi
 
 	if use upgraders; then
@@ -163,8 +146,7 @@ src_install() {
 		doins "${comp}"/build/dist/etc/beegfs-"${comp}".conf
 
 		for uf in "${comp}"/build/dist/usr/lib/systemd/system/beegfs-"${comp}"{,@}.service; do
-			test -f "${uf}" || continue
-			systemd_dounit "${uf}"
+			[[ -f "${uf}" ]] && systemd_dounit "${uf}"
 		done
 	done
 
