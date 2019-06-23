@@ -1,0 +1,43 @@
+diff --git a/common/source/common/toolkit/HighResolutionStats.h b/common/source/common/toolkit/HighResolutionStats.h
+index 740665d..adc3efd 100644
+--- a/common/source/common/toolkit/HighResolutionStats.h
++++ b/common/source/common/toolkit/HighResolutionStats.h
+@@ -94,12 +94,12 @@ class HighResolutionStatsTk
+ 
+       static void resetStats(HighResolutionStats* stats)
+       {
+-         memset(stats, 0, sizeof(*stats) );
++         *stats = {};
+       }
+ 
+       static void resetIncStats(HighResolutionStats* stats)
+       {
+-         memset(&stats->incVals, 0, sizeof(stats->incVals) );
++         stats->incVals = {};
+       }
+ };
+ 
+diff --git a/ctl/source/modes/ModeIOStat.cpp b/ctl/source/modes/ModeIOStat.cpp
+index afee89b..b8a84e3 100644
+--- a/ctl/source/modes/ModeIOStat.cpp
++++ b/ctl/source/modes/ModeIOStat.cpp
+@@ -233,8 +233,7 @@ bool ModeIOStat::nodesTotalStats(NodeStoreServers* nodes, NodeType nodeType)
+ {
+    const uint64_t oneSecMS = 1000;
+ 
+-   HighResolutionStats zeroStats;
+-   memset(&zeroStats, 0, sizeof(zeroStats) );
++   HighResolutionStats zeroStats = {};
+ 
+    HighResStatsVec statsTotal(cfgHistorySecs, zeroStats);
+ 
+@@ -406,8 +405,7 @@ void ModeIOStat::printStatsNodeRow(uint64_t timeIndexMS, HighResStatsList& stats
+ 
+    if(statsIter == stats.end() )
+    { // stats history didn't contain matching time index => use dummy with zero values
+-      HighResolutionStats zeroStats;
+-      memset(&zeroStats, 0, sizeof(zeroStats) );
++      HighResolutionStats zeroStats = {};
+ 
+       zeroStatsList.push_back(zeroStats);
+ 

@@ -33,6 +33,16 @@ RDEPEND="${DEPEND}
 BDEPEND="
 	admon-gui? ( dev-java/ant )"
 
+PATCHES=(
+	"${FILESDIR}"/${P}-fix-Wclass-memaccess-warnings.patch
+)
+
+src_prepare()
+{
+	eapply "${PATCHES[@]}"
+	java-pkg-opt-2_src_prepare
+}
+
 beegfs_emake() {
 	# - A lot of code and guides for beegfs assume binaries and scripts to reside in /opt/beegfs.
 	#   So for compatiblity, we do so as well. The official deb/rpm packages do the same.
