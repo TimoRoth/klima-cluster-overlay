@@ -16,7 +16,7 @@ SLOT="0"
 KEYWORDS="~amd64"
 IUSE="ib"
 
-MODULE_NAMES="beegfs(beegfs:client_module/build:client_module/build)"
+MODULE_NAMES="beegfs(beegfs:client_module/build)"
 MODULESD_BEEGFS_ALIASES=("fs-beegfs beegfs")
 BUILD_PARAMS="BEEGFS_VERSION='${PV}'"
 
@@ -37,10 +37,14 @@ pkg_pretend() {
 
 pkg_setup() {
 	beegfs_version_check
+
+	linux-mod_pkg_setup
 }
 
 src_compile() {
 	use ib && BUILD_PARAMS+=" BEEGFS_OPENTK_IBVERBS=1"
+
+	BUILD_PARAMS+=" KDIR='${KERNEL_DIR}'"
 
 	linux-mod_src_compile
 }
