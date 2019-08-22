@@ -29,7 +29,7 @@ HOMEPAGE="https://www.schedmd.com"
 
 LICENSE="GPL-2"
 SLOT="0"
-IUSE="debug hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa ofed pam perl ssl static-libs torque X"
+IUSE="debug hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa ofed pam perl static-libs torque X"
 
 CDEPEND="
 	!sys-cluster/torque
@@ -39,7 +39,6 @@ CDEPEND="
 	mysql? ( virtual/mysql )
 	munge? ( sys-auth/munge )
 	pam? ( virtual/pam )
-	ssl? ( dev-libs/openssl:0= )
 	lua? ( dev-lang/lua:0= )
 	!lua? ( !dev-lang/lua )
 	ipmi? ( sys-libs/freeipmi )
@@ -66,7 +65,7 @@ LIBSLURMDB_PERL_S="${WORKDIR}/${MY_P}/contribs/perlapi/libslurmdb/perl"
 RESTRICT="primaryuri test"
 
 PATCHES=(
-	"${FILESDIR}/slurm-17.02.9-disable-sview.patch"
+	"${FILESDIR}/slurm-19.05.2-disable-sview.patch"
 )
 
 S="${WORKDIR}/${MY_P}"
@@ -128,7 +127,6 @@ src_configure() {
 	econf "${myconf[@]}" \
 		$(use_enable pam) \
 		$(use_enable X x11) \
-		$(use_with ssl) \
 		$(use_with munge) \
 		$(use_with json) \
 		$(use_with hdf5) \
