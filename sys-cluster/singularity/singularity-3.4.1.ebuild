@@ -15,7 +15,8 @@ IUSE="examples +suid"
 DEPEND=">=dev-lang/go-1.10
 	sys-libs/libseccomp
 	dev-libs/openssl:0
-	sys-fs/cryptsetup"
+	sys-fs/cryptsetup
+	app-crypt/gpgme"
 RDEPEND="sys-fs/squashfs-tools:0"
 
 S="${WORKDIR}/src/github.com/sylabs/singularity"
