@@ -65,5 +65,5 @@ multilib_src_configure() {
 }
 
 multilib_src_install() {
-	dolib.so .libs/libffi.so.${SLOT}
+	dolib.so .libs/libffi.so.${SLOT}*
 }
