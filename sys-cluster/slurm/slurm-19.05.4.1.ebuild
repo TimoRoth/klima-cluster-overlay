@@ -1,44 +1,47 @@
-# Copyright 1999-2018 Gentoo Foundation
+# Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=7
 
 if [[ ${PV} == *9999* ]]; then
 	EGIT_REPO_URI="https://github.com/SchedMD/slurm.git"
 	INHERIT_GIT="git-r3"
 	SRC_URI=""
 	KEYWORDS=""
-	MY_P="slurm"
+	MY_P="${P}"
 else
-	inherit versionator
 	if [[ ${PV} == *pre* || ${PV} == *rc* ]]; then
-		MY_PV=$(replace_version_separator 3 '-0.') # pre-releases or release-candidate
+		MY_PV=$(ver_rs '-0.') # pre-releases or release-candidate
 	else
-		MY_PV=$(replace_version_separator 3 '-') # stable releases
+		MY_PV=$(ver_rs 1-3 '-') # stable releases
 	fi
 	MY_P="${PN}-${MY_PV}"
 	INHERIT_GIT=""
-	SRC_URI="https://download.schedmd.com/slurm/${MY_P}.tar.bz2"
+	SRC_URI="https://github.com/SchedMD/slurm/archive/${MY_P}.tar.gz"
 	KEYWORDS="~amd64 ~x86"
 fi
 
-inherit autotools bash-completion-r1 eutils pam perl-module prefix user systemd ${INHERIT_GIT}
+inherit autotools bash-completion-r1 pam perl-module prefix toolchain-funcs systemd ${INHERIT_GIT}
 
 DESCRIPTION="A Highly Scalable Resource Manager"
-HOMEPAGE="https://www.schedmd.com"
+HOMEPAGE="https://www.schedmd.com https://github.com/SchedMD/slurm"
 
 LICENSE="GPL-2"
 SLOT="0"
-IUSE="debug hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa ofed pam perl static-libs torque X"
+IUSE="debug hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa ofed pam perl slurmdbd ssl static-libs ucx torque X"
 
-CDEPEND="
+COMMON_DEPEND="
 	!sys-cluster/torque
 	!net-analyzer/slurm
 	!net-analyzer/sinfo
-	sys-cluster/pmix[-pmi]
-	mysql? ( virtual/mysql )
+	|| ( sys-cluster/pmix[-pmi] >=sys-cluster/openmpi-2.0.0 )
+	mysql? (
+		|| ( dev-db/mariadb-connector-c dev-db/mysql-connector-c )
+		slurmdbd? ( || ( dev-db/mariadb dev-db/mysql ) )
+		)
 	munge? ( sys-auth/munge )
-	pam? ( virtual/pam )
+	pam? ( sys-libs/pam )
+	ssl? ( dev-libs/openssl:0= )
 	lua? ( dev-lang/lua:0= )
 	!lua? ( !dev-lang/lua )
 	ipmi? ( sys-libs/freeipmi )
@@ -47,28 +50,27 @@ CDEPEND="
 	hdf5? ( sci-libs/hdf5:= )
 	numa? ( sys-process/numactl )
 	ofed? ( sys-fabric/ofed )
+	ucx? ( sys-cluster/ucx )
 	X? ( net-libs/libssh2 )
 	>=sys-apps/hwloc-1.1.1-r1
 	sys-libs/ncurses:0=
 	app-arch/lz4:0=
 	sys-libs/readline:0="
-DEPEND="${CDEPEND}
+DEPEND="${COMMON_DEPEND}
 	html? ( sys-apps/man2html )"
-RDEPEND="${CDEPEND}
+RDEPEND="${OMMON_DEPEND}
+	acct-user/slurm
+	acct-group/slurm
 	dev-libs/libcgroup"
 
 REQUIRED_USE="torque? ( perl )"
 
+S="${WORKDIR}/${PN}-${MY_P}"
+
 LIBSLURM_PERL_S="${WORKDIR}/${MY_P}/contribs/perlapi/libslurm/perl"
 LIBSLURMDB_PERL_S="${WORKDIR}/${MY_P}/contribs/perlapi/libslurmdb/perl"
 
-RESTRICT="primaryuri test"
-
-PATCHES=(
-	"${FILESDIR}/slurm-19.05.2-disable-sview.patch"
-)
-
-S="${WORKDIR}/${MY_P}"
+RESTRICT="test"
 
 src_unpack() {
 	if [[ ${PV} == *9999* ]]; then
@@ -78,43 +80,36 @@ src_unpack() {
 	fi
 }
 
-pkg_setup() {
-	enewgroup slurm 500
-	enewuser slurm 500 -1 /var/spool/slurm slurm
-}
-
 src_prepare() {
+	tc-ld-disable-gold
 	default
 
 	# pids should go to /var/run/slurm
-	sed -e "s:/var/run/slurmctld.pid:${EPREFIX}/run/slurm/slurmctld.pid:g" \
+	sed \
+		-e 's:/tmp:/var/tmp:g' \
+		-e "s:/var/run/slurmctld.pid:${EPREFIX}/run/slurm/slurmctld.pid:g" \
 		-e "s:/var/run/slurmd.pid:${EPREFIX}/run/slurm/slurmd.pid:g" \
+		-e "s:StateSaveLocation=.*:StateSaveLocation=${EPREFIX}/var/spool/slurm:g" \
+		-e "s:SlurmdSpoolDir=.*:SlurmdSpoolDir=${EPREFIX}/var/spool/slurm/slurmd:g" \
 		-i "${S}/etc/slurm.conf.example" \
-			|| die "Can't sed for /var/run/slurmctld.pid"
-	sed -i "s:/var/run/slurmdbd.pid:${EPREFIX}/run/slurm/slurmdbd.pid:g" \
+		|| die "Can't sed for /var/run/slurmctld.pid"
+	sed \
+		-e "s:/var/run/slurmdbd.pid:${EPREFIX}/run/slurm/slurmdbd.pid:g" \
 		-i "${S}/etc/slurmdbd.conf.example" \
-			|| die "Can't sed for /var/run/slurmdbd.pid"
-	# also state dirs are in /var/spool/slurm
-	sed -e "s:StateSaveLocation=*.:StateSaveLocation=${EPREFIX}/var/spool/slurm:g" \
-		-e "s:SlurmdSpoolDir=*.:SlurmdSpoolDir=${EPREFIX}/var/spool/slurm/slurmd:g" \
-		-i "${S}/etc/slurm.conf.example" \
-			|| die "Can't sed ${S}/etc/slurm.conf.example for StateSaveLocation=*. or SlurmdSpoolDir=*"
-	# and tmp should go to /var/tmp/slurm
-	sed -e 's:/tmp:/var/tmp:g' \
-		-i "${S}/etc/slurm.conf.example" \
-			|| die "Can't sed for StateSaveLocation=*./tmp"
+		|| die "Can't sed for /var/run/slurmdbd.pid"
 	# gentooify systemd services
-	sed -e 's:sysconfig/.*:conf.d/slurm:g' \
+	sed \
+		-e 's:sysconfig/.*:conf.d/slurm:g' \
 		-e 's:var/run/:run/slurm/:g' \
+		-e '/^EnvironmentFile=.*/d' \
 		-i "${S}/etc"/*.service.in \
-			|| die "Can't sed systemd services for sysconfig or var/run/"
+		|| die "Can't sed systemd services for sysconfig or var/run/"
 
 	hprefixify auxdir/{ax_check_zlib,x_ac_{lz4,ofed,munge}}.m4
 	eautoreconf
 }
 
 src_configure() {
-	use debug || myconf+=( --disable-debug )
 	local myconf=(
 		--sysconfdir="${EPREFIX}/etc/${PN}"
 		--with-hwloc="${EPREFIX}/usr"
@@ -125,12 +120,15 @@ src_configure() {
 	use mysql || myconf+=( --without-mysql_config )
 	use amd64 && myconf+=( $(use_with netloc) )
 	econf "${myconf[@]}" \
+		$(use_enable debug) \
 		$(use_enable pam) \
 		$(use_enable X x11) \
+		$(use_with ssl) \
 		$(use_with munge) \
 		$(use_with json) \
 		$(use_with hdf5) \
 		$(use_with ofed) \
+		$(use_with ucx) \
 		$(use_enable static-libs static) \
 		$(use_enable multiple-slurmd)
 
@@ -180,7 +178,7 @@ src_install() {
 	fi
 	if use torque; then
 		emake DESTDIR="${D}" -C contribs/torque
-		rm -f "${ED}/usr/bin/mpiexec" || die
+		rm -f "${D}"/usr/bin/mpiexec || die
 	fi
 	use static-libs || find "${ED}" -name '*.la' -exec rm {} +
 	# install sample configs
@@ -218,36 +216,37 @@ src_install() {
 
 pkg_preinst() {
 	if use munge; then
-		sed -i 's,\(SLURM_USE_MUNGE=\).*,\11,' "${ED}"etc/conf.d/slurm || die
+		sed -i 's,\(SLURM_USE_MUNGE=\).*,\11,' "${D}"/etc/conf.d/slurm || die
 	fi
 }
 
 create_folders_and_fix_permissions() {
 	einfo "Fixing permissions in ${@}"
-	mkdir -p ${@}
-	chown -R ${PN}:${PN} ${@}
+	mkdir -p ${@} || die
+	chown -R ${PN}:${PN} ${@} || die
 }
 
 pkg_postinst() {
 	paths=(
-		"${EROOT}"var/${PN}/checkpoint
-		"${EROOT}"var/${PN}
-		"${EROOT}"var/spool/${PN}/slurmd
-		"${EROOT}"var/spool/${PN}
-		"${EROOT}"var/log/${PN}
+		"${EROOT}"/var/${PN}/checkpoint
+		"${EROOT}"/var/${PN}
+		"${EROOT}"/var/spool/${PN}/slurmd
+		"${EROOT}"/var/spool/${PN}
+		"${EROOT}"/var/log/${PN}
 		/var/tmp/${PN}/${PN}d
 		/var/tmp/${PN}
 		/run/${PN}
 	)
+	local folder_path
 	for folder_path in ${paths[@]}; do
 		create_folders_and_fix_permissions $folder_path
 	done
+	echo
 
-	einfo
 	elog "Please visit the file '/usr/share/doc/${P}/html/configurator.html"
 	elog "through a (javascript enabled) browser to create a configureation file."
 	elog "Copy that file to /etc/slurm/slurm.conf on all nodes (including the headnode) of your cluster."
-	einfo
+	echo
 	elog "For cgroup support, please see https://www.schedmd.com/slurmdocs/cgroup.conf.html"
 	elog "Your kernel must be compiled with the wanted cgroup feature:"
 	elog "    For the proctrack plugin:"
@@ -260,7 +259,6 @@ pkg_postinst() {
 	elog "    ProctrackType=proctrack/cgroup"
 	elog "    TaskPlugin=task/cgroup"
 	einfo
-
 	ewarn "Paths were created for slurm. Please use these paths in /etc/slurm/slurm.conf:"
 	for folder_path in ${paths[@]}; do
 		ewarn "    ${folder_path}"
