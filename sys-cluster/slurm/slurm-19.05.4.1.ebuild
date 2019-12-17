@@ -72,6 +72,10 @@ LIBSLURMDB_PERL_S="${WORKDIR}/${MY_P}/contribs/perlapi/libslurmdb/perl"
 
 RESTRICT="test"
 
+PATCHES=(
+	"${FILESDIR}/slurm-19.05.2-disable-sview.patch"
+)
+
 src_unpack() {
 	if [[ ${PV} == *9999* ]]; then
 		git-r3_src_unpack

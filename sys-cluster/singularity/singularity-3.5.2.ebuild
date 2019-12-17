@@ -12,7 +12,7 @@ SLOT="0"
 KEYWORDS="~amd64 ~x86 ~amd64-linux ~x86-linux"
 IUSE="examples +suid"
 
-DEPEND=">=dev-lang/go-1.10
+DEPEND=">=dev-lang/go-1.13
 	sys-libs/libseccomp
 	dev-libs/openssl:0
 	sys-fs/cryptsetup:=
