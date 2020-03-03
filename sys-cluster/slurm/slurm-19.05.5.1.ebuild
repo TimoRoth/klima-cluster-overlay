@@ -1,4 +1,4 @@
-# Copyright 1999-2019 Gentoo Authors
+# Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -71,10 +71,6 @@ LIBSLURMDB_PERL_S="${S}/contribs/perlapi/libslurmdb/perl"
 
 RESTRICT="test"
 
-PATCHES=(
-	"${FILESDIR}/slurm-19.05.2-disable-sview.patch"
-)
-
 src_unpack() {
 	if [[ ${PV} == *9999* ]]; then
 		git-r3_src_unpack
@@ -85,6 +81,7 @@ src_unpack() {
 
 src_prepare() {
 	tc-ld-disable-gold
+	eapply "${FILESDIR}"/disable-sview.patch
 	default
 
 	# pids should go to /var/run/slurm
@@ -116,8 +113,7 @@ src_configure() {
 	local myconf=(
 		--sysconfdir="${EPREFIX}/etc/${PN}"
 		--with-hwloc="${EPREFIX}/usr"
-		--docdir="${EPREFIX}/usr/share/doc/${P}"
-		--htmldir="${EPREFIX}/usr/share/doc/${P}"
+		--htmldir="${EPREFIX}/usr/share/doc/${PF}"
 	)
 	use pam && myconf+=( --with-pam_dir=$(getpam_mod_dir) )
 	use mysql || myconf+=( --without-mysql_config )
@@ -187,7 +183,7 @@ src_install() {
 	keepdir /etc/slurm
 	insinto /etc/slurm
 	doins \
-		etc/bluegene.conf.example \
+		etc/prolog.example \
 		etc/cgroup.conf.example \
 		etc/slurm.conf.example \
 		etc/slurmdbd.conf.example

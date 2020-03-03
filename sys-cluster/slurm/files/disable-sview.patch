@@ -1,6 +1,5 @@
-diff -Naur slurm-19.05.2.orig/configure.ac slurm-19.05.2/configure.ac
---- slurm-19.05.2.orig/configure.ac	2019-08-13 20:40:08.000000000 +0200
-+++ slurm-19.05.2/configure.ac	2019-08-22 12:02:02.127865098 +0200
+--- a/configure.ac	2019-08-13 20:40:08.000000000 +0200
++++ b/configure.ac	2019-08-22 12:02:02.127865098 +0200
 @@ -229,42 +229,6 @@
  PKG_CHECK_MODULES([CHECK], [check >= 0.9.8], [ac_have_check="yes"], [ac_have_check="no"])
  AM_CONDITIONAL(HAVE_CHECK, test "x$ac_have_check" = "xyes")
