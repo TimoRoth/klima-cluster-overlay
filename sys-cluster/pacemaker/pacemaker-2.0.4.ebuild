@@ -21,7 +21,7 @@ IUSE="acl heartbeat smtp snmp"
 DEPEND="${PYTHON_DEPS}
 	app-text/docbook-xsl-stylesheets
 	dev-libs/libxslt
-	sys-cluster/cluster-glue
+	>=sys-cluster/cluster-glue-1.0.12-r2
 	>=sys-cluster/libqb-2.0.0:=
 	sys-cluster/resource-agents
 
@@ -33,6 +33,10 @@ DEPEND="${PYTHON_DEPS}
 RDEPEND="${DEPEND}"
 
 REQUIRED_USE="${PYTHON_REQUIRED_USE}"
+
+PATCHES=(
+	"${FILESDIR}"/${PN}-2.0.4-qa-warnings.patch
+)
 
 S="${WORKDIR}/${PN}-${MY_P}"
 
@@ -67,6 +71,7 @@ src_configure() {
 }
 
 src_install() {
+	export OCF_ROOT=/usr/lib/ocf
 	default
 	python_optimize
 	rm -rf "${D}/var/run" "${D}/etc/init.d"
