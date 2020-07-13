@@ -60,4 +60,6 @@ src_install() {
 
 	use doc && HTML_DOCS=("docs/html/.")
 	einstalldocs
+
+	find "${D}" -name '*.la' -delete || die
 }

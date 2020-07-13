@@ -61,5 +61,6 @@ src_install() {
 	newins "${FILESDIR}"/${PN}.logrotate ${PN}
 
 	keepdir /var/lib/corosync /var/log/cluster
-	#use static-libs || rm -rf "${D}"/usr/$(get_libdir)/*.{,l}a || die
+
+	find "${D}" -name '*.la' -delete || die
 }
