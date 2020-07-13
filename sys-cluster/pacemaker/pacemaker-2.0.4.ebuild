@@ -40,12 +40,12 @@ src_prepare() {
 	default
 	sed -i -e "s/ -ggdb//g" configure.ac || die
 	eautoreconf
-	python_fix_shebang .
 }
 
 src_configure() {
 	# appends lib to localstatedir automatically
 	local myconf=(
+		--with-ocfdir=/usr/lib/ocf
 		--localstatedir=/var
 		--disable-fatal-warnings
 		--disable-static
@@ -68,7 +68,13 @@ src_configure() {
 
 src_install() {
 	default
+	python_optimize
 	rm -rf "${D}/var/run" "${D}/etc/init.d"
+
 	newinitd "${FILESDIR}/${PN}.initd" "${PN}"
+
+	keepdir /var/lib/pacemaker/{blackbox,cib,cores,pengine}
+	keepdir /var/log/pacemaker/bundles
+
 	find "${D}" -name '*.la' -delete || die
 }

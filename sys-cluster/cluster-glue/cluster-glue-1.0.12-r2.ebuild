@@ -62,7 +62,7 @@ src_configure() {
 		$(use_enable static-libs static) \
 		--disable-fatal-warnings \
 		--localstatedir=/var \
-		--with-ocf-root=/usr/$(get_libdir)/ocf \
+		--with-ocf-root=/usr/lib/ocf \
 		${myopts} \
 		--with-group-id=$(id -g hacluster) \
 		--with-ccmuser-id=$(id -u hacluster) \
