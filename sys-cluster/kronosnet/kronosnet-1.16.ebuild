@@ -10,7 +10,7 @@ HOMEPAGE="https://kronosnet.org"
 SRC_URI="https://kronosnet.org/releases/${P}.tar.xz"
 
 LICENSE="LGPL-2.1"
-SLOT="0"
+SLOT="0/1"
 KEYWORDS="~amd64"
 IUSE="doc nss +openssl zstd lz4 lzo2"
 
