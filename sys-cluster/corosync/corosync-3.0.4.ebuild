@@ -12,7 +12,7 @@ SRC_URI="https://github.com/${PN}/${PN}/archive/v${PV}.tar.gz -> ${P}.tar.gz"
 LICENSE="BSD-2 public-domain"
 SLOT="0"
 KEYWORDS="~amd64"
-IUSE="doc systemd xml"
+IUSE="doc systemd xml dbus"
 
 # TODO: support those new configure flags
 # --enable-augeas : Install the augeas lens for corosync.conf
@@ -21,7 +21,10 @@ IUSE="doc systemd xml"
 RDEPEND="!sys-cluster/heartbeat
 	dev-libs/nss
 	>=sys-cluster/libqb-2.0.0:=
-	sys-cluster/kronosnet:="
+	sys-cluster/kronosnet:=
+	dbus? ( sys-apps/dbus )
+	systemd? ( sys-apps/systemd:= )
+	"
 DEPEND="${RDEPEND}"
 BDEPEND="virtual/pkgconfig
 	doc? ( sys-apps/groff )"
@@ -46,6 +49,7 @@ src_configure() {
 	econf_opts=(
 		--disable-static \
 		--localstatedir=/var \
+		$(use_enable dbus) \
 		$(use_enable systemd) \
 		$(use_enable xml xmlconf)
 	)

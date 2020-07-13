@@ -16,7 +16,7 @@ KEYWORDS="~amd64"
 IUSE="doc libnet rgmanager"
 
 RDEPEND="sys-apps/iproute2
-	sys-cluster/cluster-glue
+	>=sys-cluster/cluster-glue-1.0.12-r2
 	!<sys-cluster/heartbeat-3.0
 	libnet? ( net-libs/libnet:1.1 )"
 DEPEND="${RDEPEND}
