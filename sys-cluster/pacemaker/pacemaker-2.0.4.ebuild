@@ -49,7 +49,7 @@ src_prepare() {
 src_configure() {
 	# appends lib to localstatedir automatically
 	local myconf=(
-		--with-ocfdir=/usr/lib/ocf
+		--with-ocfdir=/usr/$(get_libdir)/ocf
 		--localstatedir=/var
 		--disable-fatal-warnings
 		--disable-static
@@ -71,7 +71,6 @@ src_configure() {
 }
 
 src_install() {
-	export OCF_ROOT=/usr/lib/ocf
 	default
 	python_optimize
 	rm -rf "${D}/var/run" "${D}/etc/init.d"

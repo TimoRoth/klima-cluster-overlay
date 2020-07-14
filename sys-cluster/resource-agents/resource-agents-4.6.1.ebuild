@@ -38,7 +38,7 @@ src_configure() {
 	econf \
 		--disable-fatal-warnings \
 		--localstatedir=/var \
-		--with-ocf-root=/usr/lib/ocf \
+		--with-ocf-root=/usr/$(get_libdir)/ocf \
 		$(use_enable doc) \
 		$(use_enable libnet)
 }
@@ -51,7 +51,7 @@ src_install() {
 }
 
 pkg_postinst() {
-	elog "To use Resource Agents installed in /usr/lib/ocf/resource.d"
+	elog "To use Resource Agents installed in /usr/$(get_libdir)/ocf/resource.d"
 	elog "you have to emerge required runtime dependencies manually."
 	elog ""
 	elog "Description and dependencies of all Agents can be found on"
