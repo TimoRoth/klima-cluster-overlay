@@ -43,6 +43,10 @@ src_prepare() {
 	sed -i -e '/\$(localstatedir)\/lock/d' -e '/\$(localstatedir)\/run/d' \
 		user/*/Makefile.in || die
 
+	# fix ocf path
+	sed -i -e "s:lib/ocf:$(get_libdir)/ocf:" \
+		scripts/*.{in,sh,ocf} drbd.spec.in || die
+
 	default
 
 	eautoreconf
