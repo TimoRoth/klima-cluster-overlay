@@ -47,7 +47,7 @@ src_configure() {
 src_install() {
 	default
 	rm -rf "${D}"/etc/init.d/ || die
-	rm -rf "${D}"/var/run || die
+	rm -rf "${D}"{,/var}/run || die
 	use rgmanager || rm -rf "${D}"/usr/share/cluster/ "${D}"/var/
 }
 
