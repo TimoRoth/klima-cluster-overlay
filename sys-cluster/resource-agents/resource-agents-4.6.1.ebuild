@@ -39,6 +39,7 @@ src_configure() {
 		--disable-fatal-warnings \
 		--localstatedir=/var \
 		--with-ocf-root=/usr/$(get_libdir)/ocf \
+		--with-rsctmpdir=/run/resource-agents \
 		$(use_enable doc) \
 		$(use_enable libnet)
 }
