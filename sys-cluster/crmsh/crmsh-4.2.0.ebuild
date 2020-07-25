@@ -23,11 +23,21 @@ DEPEND="${PYTHON_DEPS}
 RDEPEND="${DEPEND}
 	$(python_gen_cond_dep '
 		dev-python/lxml[${PYTHON_USEDEP}]
+		dev-python/python-dateutil[${PYTHON_USEDEP}]
+		dev-python/pyyaml[${PYTHON_USEDEP}]
+		dev-python/parallax[${PYTHON_USEDEP}]
 	')"
 
 src_prepare() {
 	default
 	eautoreconf
+}
+
+src_configure() {
+	local myconf=(
+		--with-ocf-root=/usr/$(get_libdir)/ocf
+	)
+	econf "${myconf[@]}"
 }
 
 src_install() {
