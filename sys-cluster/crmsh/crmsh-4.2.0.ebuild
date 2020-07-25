@@ -21,6 +21,7 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}"
 DEPEND="${PYTHON_DEPS}
 	>=sys-cluster/pacemaker-1.1.9"
 RDEPEND="${DEPEND}
+	>=sys-cluster/csync2-2.0-r2
 	$(python_gen_cond_dep '
 		dev-python/lxml[${PYTHON_USEDEP}]
 		dev-python/python-dateutil[${PYTHON_USEDEP}]
