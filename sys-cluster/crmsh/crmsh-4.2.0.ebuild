@@ -21,7 +21,9 @@ REQUIRED_USE="${PYTHON_REQUIRED_USE}"
 DEPEND="${PYTHON_DEPS}
 	>=sys-cluster/pacemaker-1.1.9"
 RDEPEND="${DEPEND}
-	dev-python/lxml[${PYTHON_SINGLE_USEDEP}]"
+	$(python_gen_cond_dep '
+		dev-python/lxml[${PYTHON_USEDEP}]
+	')"
 
 src_prepare() {
 	default
