@@ -6,14 +6,12 @@ EAPI=7
 if [[ ${PV} == *9999* ]]; then
 	EGIT_REPO_URI="https://github.com/SchedMD/slurm.git"
 	INHERIT_GIT="git-r3"
-	SRC_URI=""
-	KEYWORDS=""
 	MY_P="${P}"
 else
 	if [[ ${PV} == *pre* || ${PV} == *rc* ]]; then
 		MY_PV=$(ver_rs '-0.') # pre-releases or release-candidate
 	else
-		MY_PV=$(ver_rs 1-3 '-') # stable releases
+		MY_PV=$(ver_rs 1-4 '-') # stable releases
 	fi
 	MY_P="${PN}-${MY_PV}"
 	INHERIT_GIT=""
@@ -45,7 +43,7 @@ COMMON_DEPEND="
 	!lua? ( !dev-lang/lua )
 	ipmi? ( sys-libs/freeipmi )
 	json? ( dev-libs/json-c:= )
-	amd64? ( netloc? ( sys-apps/netloc ) )
+	amd64? ( netloc? ( || ( sys-apps/netloc >=sys-apps/hwloc-2.1.0[netloc] ) ) )
 	hdf5? ( sci-libs/hdf5:= )
 	numa? ( sys-process/numactl )
 	ofed? ( sys-fabric/ofed )
@@ -55,9 +53,11 @@ COMMON_DEPEND="
 	sys-libs/ncurses:0=
 	app-arch/lz4:0=
 	sys-libs/readline:0="
+
 DEPEND="${COMMON_DEPEND}
 	html? ( sys-apps/man2html )"
-RDEPEND="${OMMON_DEPEND}
+
+RDEPEND="${COMMON_DEPEND}
 	acct-user/slurm
 	acct-group/slurm
 	dev-libs/libcgroup"
@@ -81,7 +81,6 @@ src_unpack() {
 
 src_prepare() {
 	tc-ld-disable-gold
-	eapply "${FILESDIR}"/disable-sview.patch
 	default
 
 	# pids should go to /var/run/slurm
@@ -104,6 +103,8 @@ src_prepare() {
 		-e '/^EnvironmentFile=.*/d' \
 		-i "${S}/etc"/*.service.in \
 		|| die "Can't sed systemd services for sysconfig or var/run/"
+
+	sed -e '/AM_PATH_GTK_2_0/d' -i configure.ac || die
 
 	hprefixify auxdir/{ax_check_zlib,x_ac_{lz4,ofed,munge}}.m4
 	eautoreconf
