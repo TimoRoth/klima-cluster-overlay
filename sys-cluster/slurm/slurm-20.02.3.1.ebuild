@@ -154,7 +154,10 @@ src_configure() {
 
 src_compile() {
 	default
-	use pam && emake -C contribs/pam
+	if use pam; then
+		emake -C contribs/pam
+		emake -C contribs/pam_slurm_adopt
+	fi
 	if use perl ; then
 		cd "${LIBSLURM_PERL_S}" || die
 		S="${LIBSLURM_PERL_S}" perl-module_src_compile
@@ -167,7 +170,10 @@ src_compile() {
 
 src_install() {
 	default
-	use pam && emake DESTDIR="${D}" -C contribs/pam install
+	if use pam; then
+		emake DESTDIR="${D}" -C contribs/pam install
+		emake DESTDIR="${D}" -C contribs/pam_slurm_adopt install
+	fi
 	if use perl; then
 		cd "${LIBSLURM_PERL_S}" || die
 		S="${LIBSLURM_PERL_S}" perl-module_src_install
