@@ -231,7 +231,7 @@ create_folders_and_fix_permissions() {
 	chown -R ${PN}:${PN} ${@} || die
 }
 
-pkg_postinst() {
+pkg_config() {
 	paths=(
 		"${EROOT}"/var/${PN}/checkpoint
 		"${EROOT}"/var/${PN}
@@ -246,8 +246,14 @@ pkg_postinst() {
 	for folder_path in ${paths[@]}; do
 		create_folders_and_fix_permissions $folder_path
 	done
-	echo
 
+	ewarn "Paths were created for slurm. Please use these paths in /etc/slurm/slurm.conf:"
+	for folder_path in ${paths[@]}; do
+		ewarn "    ${folder_path}"
+	done
+}
+
+pkg_postinst() {
 	elog "Please visit the file '/usr/share/doc/${P}/html/configurator.html"
 	elog "through a (javascript enabled) browser to create a configureation file."
 	elog "Copy that file to /etc/slurm/slurm.conf on all nodes (including the headnode) of your cluster."
@@ -263,9 +269,4 @@ pkg_postinst() {
 	elog "Then, set these options in /etc/slurm/slurm.conf:"
 	elog "    ProctrackType=proctrack/cgroup"
 	elog "    TaskPlugin=task/cgroup"
-	einfo
-	ewarn "Paths were created for slurm. Please use these paths in /etc/slurm/slurm.conf:"
-	for folder_path in ${paths[@]}; do
-		ewarn "    ${folder_path}"
-	done
 }
