@@ -3,7 +3,7 @@
 
 EAPI=7
 
-inherit autotools user prefix
+inherit autotools user prefix systemd
 
 DESCRIPTION="An authentication service for creating and validating credentials"
 HOMEPAGE="https://github.com/dun/munge"
@@ -69,4 +69,7 @@ src_install() {
 	fi
 
 	keepdir /var/{lib,log}/munge
+
+	# Workaround for broken install in 0.5.14
+	systemd_dotmpfilesd "${S}"/src/etc/munge.tmpfiles.conf
 }
