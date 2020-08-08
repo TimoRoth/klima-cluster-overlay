@@ -41,13 +41,16 @@ src_configure() {
 	local myconf=(
 		--disable-versioning
 		--prefix="${EPREFIX}/usr/share/Modules"
+		--mandir="${EPREFIX}/usr/share/man"
+		--docdir="${EPREFIX}/usr/share/doc/${P}"
+		--libdir="${EPREFIX}/usr/share/Modules/$(get_libdir)"
 		--datarootdir="${EPREFIX}/usr/share"
 		--modulefilesdir="${EPREFIX}/etc/modulefiles"
 		--with-tcl="${EPREFIX}/usr/$(get_libdir)"
 		--with-python="${PYTHON}"
 		$(use_enable compat compat-version)
 	)
-	econf "${myconf[@]}"
+	./configure "${myconf[@]}" || die "configure failed"
 }
 
 src_install() {
