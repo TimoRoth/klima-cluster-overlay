@@ -12,7 +12,7 @@ SRC_URI="https://github.com/openpmix/openpmix/releases/download/v${PV}/${P}.tar.
 SLOT="0"
 LICENSE="BSD"
 KEYWORDS="~amd64 ~x86 ~amd64-linux ~x86-linux"
-IUSE="debug +munge pmi"
+IUSE="debug +munge pmi man"
 
 RDEPEND="
 	dev-libs/libevent:0=
@@ -20,6 +20,7 @@ RDEPEND="
 	sys-libs/zlib:0=
 	munge? ( sys-auth/munge )
 	pmi? ( !sys-cluster/slurm )
+	man? ( app-text/pandoc )
 	"
 DEPEND="${RDEPEND}"
 
@@ -32,5 +33,6 @@ src_configure() {
 	econf \
 		$(use_enable debug) \
 		$(use_enable pmi pmi-backward-compatibility) \
+		$(use_enable man man-pages) \
 		$(use_with munge)
 }
