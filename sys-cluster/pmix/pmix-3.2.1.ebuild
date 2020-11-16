@@ -20,9 +20,10 @@ RDEPEND="
 	sys-libs/zlib:0=
 	munge? ( sys-auth/munge )
 	pmi? ( !sys-cluster/slurm )
-	man? ( app-text/pandoc )
 	"
 DEPEND="${RDEPEND}"
+BDEPEND="
+	man? ( app-text/pandoc )"
 
 src_prepare() {
 	default
