@@ -35,7 +35,7 @@ COMMON_DEPEND="
 	|| ( sys-cluster/pmix[-pmi] >=sys-cluster/openmpi-2.0.0 )
 	mysql? (
 		|| ( dev-db/mariadb-connector-c dev-db/mysql-connector-c )
-		slurmdbd? ( || ( dev-db/mariadb dev-db/mysql ) )
+		slurmdbd? ( || ( dev-db/mariadb:* dev-db/mysql:* ) )
 		)
 	munge? ( sys-auth/munge )
 	pam? ( sys-libs/pam )
@@ -196,10 +196,6 @@ src_install() {
 		etc/slurmdbd.conf.example
 	exeinto /etc/slurm
 	keepdir /etc/slurm/layouts.d
-	insinto /etc/slurm/layouts.d
-	newins etc/layouts.d.power.conf.example power.conf.example
-	newins etc/layouts.d.power_cpufreq.conf.example power_cpufreq.conf.example
-	newins etc/layouts.d.unit.conf.example unit.conf.example
 	# install init.d files
 	newinitd "$(prefixify_ro "${FILESDIR}/slurmd.initd")" slurmd
 	newinitd "$(prefixify_ro "${FILESDIR}/slurmctld.initd")" slurmctld
@@ -246,7 +242,7 @@ pkg_config() {
 	for folder_path in ${paths[@]}; do
 		create_folders_and_fix_permissions $folder_path
 	done
-
+	einfo
 	ewarn "Paths were created for slurm. Please use these paths in /etc/slurm/slurm.conf:"
 	for folder_path in ${paths[@]}; do
 		ewarn "    ${folder_path}"
