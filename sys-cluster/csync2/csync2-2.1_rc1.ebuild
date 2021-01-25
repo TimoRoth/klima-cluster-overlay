@@ -7,7 +7,8 @@ inherit autotools systemd
 
 DESCRIPTION="Cluster synchronization tool"
 HOMEPAGE="https://github.com/LINBIT/csync2"
-SRC_URI="https://github.com/LINBIT/${PN}/archive/${P}.tar.gz -> ${P}-github.tar.gz"
+MY_SNAPSHOT="83b36449abb4c2903ef3b40b46018240633989e0"
+SRC_URI="https://github.com/LINBIT/${PN}/archive/${MY_SNAPSHOT}.tar.gz -> ${P}-github.tar.gz"
 
 LICENSE="GPL-2"
 KEYWORDS="~amd64 ~arm ~x86"
@@ -26,7 +27,7 @@ DEPEND="${RDEPEND}
 REQUIRED_USE="|| ( mysql postgres sqlite )"
 SLOT="0"
 
-S="${WORKDIR}/${PN}-${P}"
+S="${WORKDIR}/${PN}-${MY_SNAPSHOT}"
 
 src_prepare() {
 	default
