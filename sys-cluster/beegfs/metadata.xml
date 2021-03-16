@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<use>
+		<flag name="client">Include client tools</flag>
+		<flag name="ib">Include InfiniBand support</flag>
+		<flag name="utils">Include utils (beegfs-ctl, ...)</flag>
+		<flag name="upgraders">Include upgrade utils</flag>
+		<flag name="helperd">Include helperd service</flag>
+		<flag name="meta">Include meta service</flag>
+		<flag name="storage">Include storage service</flag>
+		<flag name="mgmtd">Include mgmtd service</flag>
+		<flag name="mon">Include mon service</flag>
+		<flag name="admon">Include admon service</flag>
+		<flag name="admon-gui">Include Java-Based admon-gui</flag>
+		<flag name="beeond">Include beeond scripts</flag>
+	</use>
+</pkgmetadata>

@@ -1,0 +1,19 @@
+commit 5189bc85357c6aa96b7cd31f1f4113312475ba81
+Author: Timo Rothenpieler <timo.rothenpieler@uni-bremen.de>
+Date:   Tue Mar 16 16:39:07 2021 +0100
+
+    Fix compilation with gcc >=9
+
+diff --git a/thirdparty/source/nu/include/nu/error_or.hpp b/thirdparty/source/nu/include/nu/error_or.hpp
+index 524f212..aaf30ab 100644
+--- a/thirdparty/source/nu/include/nu/error_or.hpp
++++ b/thirdparty/source/nu/include/nu/error_or.hpp
+@@ -150,7 +150,7 @@ public:
+ 	///    Swaps the states of ``*this`` and ``other``.
+ 	///
+ 	///    :noexcept: |swap(T,T)-noexcept|
+-	void swap(error_or& other) noexcept(error_or::is_nothrow_swappable<T>())
++	void swap(error_or& other) noexcept(error_or::template is_nothrow_swappable<T>())
+ 	{
+ 		using std::swap;
+ 
