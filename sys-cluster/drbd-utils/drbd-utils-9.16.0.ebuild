@@ -1,31 +1,43 @@
-# Copyright 1999-2020 Gentoo Foundation
+# Copyright 1999-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
 
-inherit bash-completion-r1 udev autotools systemd
-
-LICENSE="GPL-2"
+inherit autotools bash-completion-r1 udev systemd
 
 DESCRIPTION="mirror/replicate block-devices across a network-connection"
-SRC_URI="https://www.linbit.com/downloads/drbd/utils/${P/_/}.tar.gz"
-HOMEPAGE="http://www.drbd.org"
+SRC_URI="https://www.linbit.com/downloads/drbd/utils/${P}.tar.gz"
+HOMEPAGE="https://www.linbit.com/drbd"
 
-KEYWORDS="~amd64 ~x86"
-IUSE="heartbeat pacemaker +udev xen"
+LICENSE="GPL-2"
 SLOT="0"
+KEYWORDS="amd64 x86"
+IUSE="pacemaker +udev xen"
 
-DEPEND="heartbeat? ( sys-cluster/heartbeat )
+DEPEND="
 	pacemaker? ( sys-cluster/pacemaker )
 	udev? ( virtual/udev )"
 RDEPEND="${DEPEND}"
+BDEPEND="sys-devel/flex"
+
+PATCHES=(
+	"${FILESDIR}"/${P}-sysmacros.patch
+)
 
 S="${WORKDIR}/${P/_/}"
 
 src_prepare() {
-	# This package has a ton of hardcoded paths to /lib and /usr/lib
-	# There is really no sensible way to fix this, so this is knowingly in violation
-	# of multilib guidelines.
+	# respect LDFLAGS, #453442
+	sed -e "s/\$(CC) -o/\$(CC) \$(LDFLAGS) -o/" \
+		-e "/\$(DESTDIR)\$(localstatedir)\/lock/d" \
+		-i user/*/Makefile.in || die
+
+	# respect multilib
+	sed -i -e "s:/lib/:/$(get_libdir)/:g" \
+		Makefile.in scripts/{Makefile.in,global_common.conf,drbd.conf.example} || die
+	sed -e "s:@prefix@/lib:@prefix@/$(get_libdir):" \
+		-e "s:(DESTDIR)/lib:(DESTDIR)/$(get_libdir):" \
+		-i user/*/Makefile.in || die
 
 	# correct install paths (really correct this time)
 	sed -i -e "s:\$(sysconfdir)/bash_completion.d:$(get_bashcompdir):" \
@@ -46,33 +58,32 @@ src_prepare() {
 	# fix ocf path
 	sed -i -e "s:lib/ocf:$(get_libdir)/ocf:" \
 		scripts/*.{in,sh,ocf} drbd.spec.in || die
+	sed -i -e "s:\$(sysconfdir)/udev:$(get_udevdir):" scripts/Makefile.in || die
 
 	default
-
 	eautoreconf
 }
 
 src_configure() {
 	econf \
-		--localstatedir=/var \
-		--without-rgmanager \
-		$(use_with udev) \
-		$(use_with xen) \
-		$(use_with pacemaker) \
-		$(use_with heartbeat) \
+		--localstatedir="${EPREFIX}"/var \
 		--with-bashcompletion \
-		--with-distro=gentoo
+		--with-distro=gentoo \
+		--with-prebuiltman \
+		--without-rgmanager \
+		$(use_with pacemaker) \
+		$(use_with udev) \
+		$(use_with xen)
 }
 
 src_compile() {
 	# only compile the tools
-	emake OPTFLAGS="${CFLAGS}" tools
+	emake OPTFLAGS="${CFLAGS}" tools doc
 }
 
 src_install() {
 	# only install the tools
 	emake DESTDIR="${ED}" install-tools install-doc
-	dodoc README.md ChangeLog
 
 	# install our own init script
 	newinitd "${FILESDIR}"/${PN}-8.0.rc ${PN/-utils/}
@@ -84,6 +95,13 @@ src_install() {
 	keepdir /var/lib/drbd
 
 	systemd_newtmpfilesd "${FILESDIR}/drbd.tmpfiles" drbd.conf
+
+	# https://bugs.gentoo.org/698304
+	dodir lib/drbd
+	local i
+	for i in drbdadm-83 drbdadm-84 drbdsetup-83 drbdsetup-84; do
+		dosym ../../lib64/drbd/"${i}" lib/drbd/"${i}"
+	done
 }
 
 pkg_postinst() {
