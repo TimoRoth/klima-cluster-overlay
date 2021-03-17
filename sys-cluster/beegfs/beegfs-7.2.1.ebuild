@@ -14,9 +14,8 @@ EGIT_COMMIT="${PV}"
 LICENSE="BeeGFS-EULA"
 SLOT="0"
 KEYWORDS="~amd64"
-IUSE="+client +utils infiniband upgraders helperd meta storage mgmtd mon admon admon-gui java beeond bash-completion"
+IUSE="+client +utils infiniband upgraders helperd meta storage mgmtd mon java beeond bash-completion grafana"
 REQUIRED_USE="
-	admon-gui? ( java )
 	beeond? ( utils mgmtd meta storage client helperd )"
 
 DEPEND="
@@ -30,8 +29,6 @@ DEPEND="
 	java? ( >=virtual/jdk-1.6:* )"
 RDEPEND="${DEPEND}
 	client? ( =sys-cluster/beegfs-kmod-${PV}*[infiniband=] )"
-BDEPEND="
-	admon-gui? ( dev-java/ant )"
 
 PATCHES=(
 	"${FILESDIR}"/beegfs-7.2.1-fix-gcc9-compilation.patch
@@ -89,11 +86,6 @@ src_compile() {
 	if use java; then
 		einfo "Building Java bindings..."
 		beegfs_emake -C java_lib/build
-	fi
-
-	if use admon || use admon-gui; then
-		einfo "Building admon..."
-		beegfs_emake -C admon/build $(usex admon all "") $(usex admon-gui admon_gui "")
 	fi
 
 	if use beeond; then
@@ -158,7 +150,18 @@ src_install() {
 		for uf in "${comp}"/build/dist/usr/lib/systemd/system/beegfs-"${comp}"{,@}.service; do
 			[[ -f "${uf}" ]] && systemd_dounit "${uf}"
 		done
+
+		exeinto /opt/beegfs/sbin
+		setup_script="${comp}/build/dist/sbin/beegfs-setup-${comp}"
+		[[ -f "${setup_script}" ]] && doexe "${setup_script}"
 	done
+
+	if use grafana; then
+		einfo "Installing grafana dashboards..."
+
+		insinto /opt/beegfs/lib/grafana
+		doins mon/scripts/grafana/*
+	fi
 
 	if use upgraders; then
 		einfo "Installing upgraders..."
@@ -174,39 +177,6 @@ src_install() {
 		doins \
 			java_lib/build/libjbeegfs.so \
 			java_lib/build/jbeegfs.jar
-	fi
-
-	if use admon; then
-		einfo "Installing admon..."
-
-		exeinto /opt/beegfs/sbin
-		doexe admon/build/beegfs-admon
-		doexe admon/build/dist/sbin/beegfs-setup-admon
-
-		mkdir -p "${ED}"/opt/beegfs/setup/info || die
-		touch "${ED}"/opt/beegfs/setup/info/{clients,ib_nodes,management,meta_server,meta_server} || die
-
-		keepdir /opt/beegfs/setup/tmp
-
-		insinto /opt/beegfs/setup
-		doins -r admon/scripts/*
-
-		insinto /etc/beegfs
-		doins admon/build/dist/etc/beegfs-admon.conf
-
-		keepdir /var/lib/beegfs/www
-
-		systemd_dounit admon/build/dist/usr/lib/systemd/system/beegfs-admon.service
-	fi
-
-	if use admon-gui; then
-		einfo "Installing admon-gui..."
-
-		insinto /usr/bin
-		doins admon/build/dist/usr/bin/beegfs-admon-gui
-
-		insinto /opt/beegfs/beegfs-admon-gui
-		doins admon_gui/dist/beegfs-admon-gui.jar
 	fi
 
 	if use beeond; then
