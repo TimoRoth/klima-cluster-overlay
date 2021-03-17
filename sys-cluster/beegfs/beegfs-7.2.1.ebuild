@@ -26,7 +26,7 @@ DEPEND="
 	dev-db/sqlite:3
 	net-misc/curl[curl_ssl_openssl]
 	storage? ( sys-fs/xfsprogs )
-	infiniband?	( sys-fabric/rdma-core:= )
+	infiniband?	( sys-cluster/rdma-core:= )
 	java? ( >=virtual/jdk-1.6:* )"
 RDEPEND="${DEPEND}
 	client? ( =sys-cluster/beegfs-kmod-${PV}*[infiniband=] )"
