@@ -21,7 +21,7 @@ RDEPEND="${DEPEND}"
 BDEPEND="sys-devel/flex"
 
 PATCHES=(
-	"${FILESDIR}"/${P}-sysmacros.patch
+	"${FILESDIR}"/${PN}-9.18.0-sysmacros.patch
 )
 
 S="${WORKDIR}/${P/_/}"
