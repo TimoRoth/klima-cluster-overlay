@@ -58,6 +58,7 @@ COMMON_DEPEND="
 	!minimal? (
 		dev-libs/libltdl
 		sys-libs/e2fsprogs-libs
+		>=dev-db/lmdb-0.9.29:=
 		tcpd? ( sys-apps/tcp-wrappers )
 		odbc? ( !iodbc? ( dev-db/unixODBC )
 			iodbc? ( dev-db/libiodbc ) )
@@ -129,6 +130,11 @@ MULTILIB_WRAPPED_HEADERS=(
 	/usr/include/SaslInteractionHandler.h
 	/usr/include/StringList.h
 	/usr/include/TlsOptions.h
+)
+
+PATCHES=(
+	#unbundle lmdb
+	"${FILESDIR}"/${PN}-2.5.5-mdb-unbundle.patch
 )
 
 openldap_filecount() {
