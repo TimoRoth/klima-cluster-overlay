@@ -683,6 +683,8 @@ multilib_src_install() {
 	if ! use static-libs ; then
 		find "${ED}" \( -name '*.a' -o -name '*.la' \) -delete || die
 	fi
+
+	rmdir "${ED}"/var/lib/run || die
 }
 
 multilib_src_install_all() {
