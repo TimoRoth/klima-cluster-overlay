@@ -58,7 +58,6 @@ COMMON_DEPEND="
 	!minimal? (
 		dev-libs/libltdl
 		sys-libs/e2fsprogs-libs
-		>=dev-db/lmdb-0.9.18:=
 		tcpd? ( sys-apps/tcp-wrappers )
 		odbc? ( !iodbc? ( dev-db/unixODBC )
 			iodbc? ( dev-db/libiodbc ) )
@@ -306,7 +305,6 @@ src_prepare() {
 		-i include/ldap_defaults.h || die
 
 	default
-	rm -r libraries/liblmdb || die
 
 	pushd build &>/dev/null || die "pushd build"
 	einfo "Making sure upstream build strip does not do stripping too early"
