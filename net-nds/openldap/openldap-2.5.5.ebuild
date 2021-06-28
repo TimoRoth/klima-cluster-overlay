@@ -24,7 +24,7 @@ LICENSE="OPENLDAP GPL-2"
 SLOT="0"
 KEYWORDS="~amd64"
 
-IUSE_DAEMON="crypt samba tcpd experimental minimal"
+IUSE_DAEMON="crypt tcpd experimental minimal"
 IUSE_OVERLAY="overlays perl"
 IUSE_OPTIONAL="gnutls iodbc sasl ssl odbc debug ipv6 +syslog selinux static-libs test"
 IUSE_CONTRIB="smbkrb5passwd kerberos kinit pbkdf2 sha2"
@@ -44,7 +44,6 @@ BDB_SLOTS="${OPENLDAP_BDB_SLOTS:=5.3 5.1 4.8 4.7 4.6 4.5 4.4}"
 BDB_PKGS=''
 for _slot in $BDB_SLOTS; do BDB_PKGS="${BDB_PKGS} sys-libs/db:${_slot}" ; done
 
-# openssl is needed to generate lanman-passwords required by samba
 COMMON_DEPEND="
 	ssl? (
 		!gnutls? (
@@ -64,9 +63,6 @@ COMMON_DEPEND="
 		odbc? ( !iodbc? ( dev-db/unixODBC )
 			iodbc? ( dev-db/libiodbc ) )
 		perl? ( dev-lang/perl:=[-build(-)] )
-		samba? (
-			dev-libs/openssl:0=
-		)
 		smbkrb5passwd? (
 			dev-libs/openssl:0=
 			kerberos? ( app-crypt/heimdal )
@@ -371,7 +367,7 @@ multilib_src_configure() {
 
 		# backends
 		myconf+=( --enable-slapd )
-		for backend in dnssrv ldap mdb meta monitor null passwd relay shell sock; do
+		for backend in dnssrv ldap mdb meta null passwd relay sock; do
 			myconf+=( --enable-${backend}=mod )
 		done
 
@@ -391,7 +387,6 @@ multilib_src_configure() {
 		myconf+=(
 			$(use_enable crypt)
 			--disable-slp
-			$(use_enable samba lmpasswd)
 			$(use_enable syslog)
 		)
 		if use experimental ; then
@@ -400,7 +395,7 @@ multilib_src_configure() {
 				--enable-aci
 			)
 		fi
-		for option in cleartext modules rewrite rlookups slapi; do
+		for option in cleartext modules rlookups slapi; do
 			myconf+=( --enable-${option} )
 		done
 
@@ -433,7 +428,7 @@ multilib_src_configure() {
 	)
 
 	local ssl_lib="no"
-	if use ssl || ( ! use minimal && use samba ) ; then
+	if use ssl; then
 		ssl_lib="openssl"
 		use gnutls && ssl_lib="gnutls"
 	fi
@@ -768,7 +763,6 @@ multilib_src_install() {
 		newins "${DISTDIR}"/${BIS_P} ${BIS_PN}
 
 		docinto back-sock ; dodoc "${S}"/servers/slapd/back-sock/searchexample*
-		docinto back-shell ; dodoc "${S}"/servers/slapd/back-shell/searchexample*
 		docinto back-perl ; dodoc "${S}"/servers/slapd/back-perl/SampleLDAP.pm
 
 		dosbin "${S}"/contrib/slapd-tools/statslog
