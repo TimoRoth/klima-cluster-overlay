@@ -397,10 +397,10 @@ multilib_src_configure() {
 		if use experimental ; then
 			myconf+=(
 				--enable-dynacl
-				--enable-aci=mod
+				--enable-aci
 			)
 		fi
-		for option in aci cleartext modules rewrite rlookups slapi; do
+		for option in cleartext modules rewrite rlookups slapi; do
 			myconf+=( --enable-${option} )
 		done
 
