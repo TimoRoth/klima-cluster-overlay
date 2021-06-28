@@ -319,24 +319,14 @@ src_prepare() {
 }
 
 build_contrib_module() {
-	# <dir> <sources> <outputname>
+	# <dir> [<target>]
 	pushd "${S}/contrib/slapd-modules/$1" &>/dev/null || die "pushd contrib/slapd-modules/$1"
-	einfo "Compiling contrib-module: $3"
-	# Make sure it's uppercase
-	local define_name="$(LC_ALL=C tr '[:lower:]' '[:upper:]' <<< "SLAPD_OVER_${1}")"
-	"${lt}" --mode=compile --tag=CC \
-		"${CC}" \
-		-D${define_name}=SLAPD_MOD_DYNAMIC \
-		-I"${BUILD_DIR}"/include \
-		-I../../../include -I../../../servers/slapd ${CFLAGS} \
-		-o ${2%.c}.lo -c $2 || die "compiling $3 failed"
-	einfo "Linking contrib-module: $3"
-	"${lt}" --mode=link --tag=CC \
-		"${CC}" -module \
-		${CFLAGS} \
-		${LDFLAGS} \
-		-rpath "${EPREFIX}"/usr/$(get_libdir)/openldap/openldap \
-		-o $3.la ${2%.c}.lo || die "linking $3 failed"
+	einfo "Compiling contrib-module: $1"
+	local target="${2:-all}"
+	emake \
+		LDAP_BUILD="${BUILD_DIR}" prefix="${EPREFIX}/usr" \
+		CC="${CC}" libexecdir="${EPREFIX}/usr/$(get_libdir)/openldap" \
+		"$target"
 	popd &>/dev/null || die
 }
 
@@ -515,123 +505,46 @@ multilib_src_compile() {
 
 			emake \
 				LDAP_BUILD="${BUILD_DIR}" \
-				CC="${CC}" libexecdir="/usr/$(get_libdir)/openldap"
+				CC="${CC}" libexecdir="${EPREFIX}/usr/$(get_libdir)/openldap"
 			popd &>/dev/null || die
 		fi
 
 		if use kerberos ; then
 			if use kinit ; then
-				build_contrib_module "kinit" "kinit.c" "kinit"
+				build_contrib_module "kinit"
 			fi
-			pushd "${S}/contrib/slapd-modules/passwd" &>/dev/null || die "pushd contrib/slapd-modules/passwd"
-			einfo "Compiling contrib-module: pw-kerberos"
-			"${lt}" --mode=compile --tag=CC \
-				"${CC}" \
-				-I"${BUILD_DIR}"/include \
-				-I../../../include \
-				${CFLAGS} \
-				$(krb5-config --cflags) \
-				-DHAVE_KRB5 \
-				-o kerberos.lo \
-				-c kerberos.c || die "compiling pw-kerberos failed"
-			einfo "Linking contrib-module: pw-kerberos"
-			"${lt}" --mode=link --tag=CC \
-				"${CC}" -module \
-				${CFLAGS} \
-				${LDFLAGS} \
-				-rpath "${EPREFIX}"/usr/$(get_libdir)/openldap/openldap \
-				-o pw-kerberos.la \
-				kerberos.lo || die "linking pw-kerberos failed"
-			popd &>/dev/null || die
+			build_contrib_module "passwd" "pw-kerberos.la"
 		fi
 
 		if use pbkdf2; then
-			pushd "${S}/contrib/slapd-modules/passwd/pbkdf2" &>/dev/null || die "pushd contrib/slapd-modules/passwd/pbkdf2"
-			einfo "Compiling contrib-module: pw-pbkdf2"
-			"${lt}" --mode=compile --tag=CC \
-				"${CC}" \
-				-I"${BUILD_DIR}"/include \
-				-I../../../../include \
-				${CFLAGS} \
-				-o pbkdf2.lo \
-				-c pw-pbkdf2.c || die "compiling pw-pbkdf2 failed"
-			einfo "Linking contrib-module: pw-pbkdf2"
-			"${lt}" --mode=link --tag=CC \
-				"${CC}" -module \
-				${CFLAGS} \
-				${LDFLAGS} \
-				-rpath "${EPREFIX}"/usr/$(get_libdir)/openldap/openldap \
-				-o pw-pbkdf2.la \
-				pbkdf2.lo || die "linking pw-pbkdf2 failed"
-			popd &>/dev/null || die
+			build_contrib_module "passwd/pbkdf2"
 		fi
 
 		if use sha2 ; then
-			pushd "${S}/contrib/slapd-modules/passwd/sha2" &>/dev/null || die "pushd contrib/slapd-modules/passwd/sha2"
-			einfo "Compiling contrib-module: pw-sha2"
-			"${lt}" --mode=compile --tag=CC \
-				"${CC}" \
-				-I"${BUILD_DIR}"/include \
-				-I../../../../include \
-				${CFLAGS} \
-				-o sha2.lo \
-				-c sha2.c || die "compiling pw-sha2 failed"
-			"${lt}" --mode=compile --tag=CC \
-				"${CC}" \
-				-I"${BUILD_DIR}"/include \
-				-I../../../../include \
-				${CFLAGS} \
-				-o slapd-sha2.lo \
-				-c slapd-sha2.c || die "compiling pw-sha2 failed"
-			einfo "Linking contrib-module: pw-sha2"
-			"${lt}" --mode=link --tag=CC \
-				"${CC}" -module \
-				${CFLAGS} \
-				${LDFLAGS} \
-				-rpath "${EPREFIX}"/usr/$(get_libdir)/openldap/openldap \
-				-o pw-sha2.la \
-				sha2.lo slapd-sha2.lo || die "linking pw-sha2 failed"
-			popd &>/dev/null || die
+			build_contrib_module "passwd/sha2"
 		fi
 
 		# We could build pw-radius if GNURadius would install radlib.h
-		pushd "${S}/contrib/slapd-modules/passwd" &>/dev/null || die "pushd contrib/slapd-modules/passwd"
-		einfo "Compiling contrib-module: pw-netscape"
-		"${lt}" --mode=compile --tag=CC \
-			"${CC}" \
-			-I"${BUILD_DIR}"/include \
-			-I../../../include \
-			${CFLAGS} \
-			-o netscape.lo \
-			-c netscape.c || die "compiling pw-netscape failed"
-		einfo "Linking contrib-module: pw-netscape"
-		"${lt}" --mode=link --tag=CC \
-			"${CC}" -module \
-			${CFLAGS} \
-			${LDFLAGS} \
-			-rpath "${EPREFIX}"/usr/$(get_libdir)/openldap/openldap \
-			-o pw-netscape.la \
-			netscape.lo || die "linking pw-netscape failed"
+		build_contrib_module "passwd" "pw-netscape.la"
 
-		#build_contrib_module "acl" "posixgroup.c" "posixGroup" # example code only
-		#build_contrib_module "acl" "gssacl.c" "gss" # example code only, also needs kerberos
-		build_contrib_module "addpartial" "addpartial-overlay.c" "addpartial-overlay"
-		build_contrib_module "allop" "allop.c" "overlay-allop"
-		build_contrib_module "allowed" "allowed.c" "allowed"
-		build_contrib_module "autogroup" "autogroup.c" "autogroup"
-		build_contrib_module "cloak" "cloak.c" "cloak"
-		# build_contrib_module "comp_match" "comp_match.c" "comp_match" # really complex, adds new external deps, questionable demand
-		build_contrib_module "denyop" "denyop.c" "denyop-overlay"
-		build_contrib_module "dsaschema" "dsaschema.c" "dsaschema-plugin"
-		build_contrib_module "dupent" "dupent.c" "dupent"
-		build_contrib_module "lastbind" "lastbind.c" "lastbind"
+		#build_contrib_module "acl" "posixgroup.la" # example code only
+		#build_contrib_module "acl" "gssacl.la" # example code only, also needs kerberos
+		build_contrib_module "addpartial"
+		build_contrib_module "allop"
+		build_contrib_module "allowed"
+		build_contrib_module "autogroup"
+		build_contrib_module "cloak"
+		# build_contrib_module "comp_match" # really complex, adds new external deps, questionable demand
+		build_contrib_module "denyop"
+		build_contrib_module "dsaschema"
+		build_contrib_module "dupent"
+		build_contrib_module "lastbind"
 		# lastmod may not play well with other overlays
-		build_contrib_module "lastmod" "lastmod.c" "lastmod"
-		build_contrib_module "noopsrch" "noopsrch.c" "noopsrch"
-		#build_contrib_module "nops" "nops.c" "nops-overlay" https://bugs.gentoo.org/641576
-		#build_contrib_module "nssov" "nssov.c" "nssov-overlay" RESO:LATER
-		build_contrib_module "trace" "trace.c" "trace"
-		popd &>/dev/null || die
+		build_contrib_module "lastmod"
+		build_contrib_module "noopsrch"
+		#build_contrib_module "nops" https://bugs.gentoo.org/641576
+		#build_contrib_module "nssov" RESO:LATER
+		build_contrib_module "trace"
 		# build slapi-plugins
 		pushd "${S}/contrib/slapi-plugins/addrdnvalues" &>/dev/null || die "pushd contrib/slapi-plugins/addrdnvalues"
 		einfo "Building contrib-module: addrdnvalues plugin"
