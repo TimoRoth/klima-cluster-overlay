@@ -690,7 +690,9 @@ multilib_src_install() {
 		find "${ED}" \( -name '*.a' -o -name '*.la' \) -delete || die
 	fi
 
-	rmdir "${ED}"/var/lib/run || die
+	if [[ -d "${ED}"/var/lib/run ]]; then
+		rmdir "${ED}"/var/lib/run || die
+	fi
 }
 
 multilib_src_install_all() {
