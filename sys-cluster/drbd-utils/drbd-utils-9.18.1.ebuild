@@ -3,10 +3,10 @@
 
 EAPI=7
 
-inherit autotools bash-completion-r1 udev systemd
+inherit autotools bash-completion-r1 udev tmpfiles
 
 DESCRIPTION="mirror/replicate block-devices across a network-connection"
-SRC_URI="https://www.linbit.com/downloads/drbd/utils/${P}.tar.gz"
+SRC_URI="https://pkg.linbit.com/downloads/drbd/utils/${P}.tar.gz"
 HOMEPAGE="https://www.linbit.com/drbd"
 
 LICENSE="GPL-2"
@@ -94,7 +94,7 @@ src_install() {
 
 	keepdir /var/lib/drbd
 
-	systemd_newtmpfilesd "${FILESDIR}/drbd.tmpfiles" drbd.conf
+	newtmpfiles "${FILESDIR}/drbd.tmpfiles" drbd.conf
 
 	# https://bugs.gentoo.org/698304
 	dodir lib/drbd
