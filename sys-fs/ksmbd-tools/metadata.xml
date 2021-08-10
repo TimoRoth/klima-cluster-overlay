@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<upstream>
+		<remote-id type="github">cifsd-team/ksmbd-tools</remote-id>
+	</upstream>
+	<use>
+		<flag name="kernel-builtin">Disable dependency on ksmbd module, assuming it is part of the kernel source tree</flag>
+	</use>
+</pkgmetadata>
