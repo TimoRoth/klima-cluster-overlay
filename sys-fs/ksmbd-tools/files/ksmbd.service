@@ -6,9 +6,9 @@ After=network.target network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStartPre=/usr/bin/modprobe ksmbd
-ExecStart=/usr/bin/ksmbd.mountd -s
-ExecStop=/usr/bin/ksmbd.control -s
+ExecStartPre=/sbin/modprobe ksmbd
+ExecStart=/usr/sbin/ksmbd.mountd -s
+ExecStop=/usr/sbin/ksmbd.control -s
 
 [Install]
 WantedBy=multi-user.target
