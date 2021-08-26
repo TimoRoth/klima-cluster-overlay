@@ -3,5 +3,6 @@
 <pkgmetadata>
 	<use>
 		<flag name="numa">Add support for numa memory allocation</flag>
+		<flag name="knem">Add support for knem transport</flag>
 	</use>
 </pkgmetadata>
