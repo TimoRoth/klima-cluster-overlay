@@ -264,7 +264,7 @@ pkg_config() {
 }
 
 pkg_postinst() {
-	tmpfiles_process
+	tmpfiles_process slurm.conf
 
 	elog "Please visit the file '/usr/share/doc/${P}/html/configurator.html"
 	elog "through a (javascript enabled) browser to create a configureation file."
