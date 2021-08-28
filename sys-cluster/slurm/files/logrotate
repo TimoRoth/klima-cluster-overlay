@@ -10,7 +10,7 @@
     noolddir
     rotate 5
     sharedscripts
-    size=5M
+    size 5M
     create 640 slurm slurm
     postrotate
         /etc/init.d/slurmd reload
