@@ -77,7 +77,6 @@ RESTRICT="test"
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-21.08.0.1_autoconf-lua.patch
-	"${FILESDIR}"/${PN}-21.08.0.1_fix_netloc_check.patch
 )
 
 pkg_setup() {
