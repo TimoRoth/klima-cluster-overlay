@@ -1,7 +1,7 @@
 # Copyright 1999-2021 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 inherit linux-info toolchain-funcs
 
@@ -11,7 +11,7 @@ SRC_URI="https://github.com/hpcng/${PN}/releases/download/v${PV}/${P}.tar.gz"
 
 SLOT="0"
 LICENSE="BSD"
-KEYWORDS="~amd64 ~x86 ~amd64-linux ~x86-linux"
+KEYWORDS="~amd64 ~riscv ~x86 ~amd64-linux ~x86-linux"
 IUSE="examples +network +suid"
 
 # Do not complain about CFLAGS etc. since go projects do not use them.
