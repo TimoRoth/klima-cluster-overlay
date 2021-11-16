@@ -28,7 +28,7 @@ HOMEPAGE="https://www.schedmd.com https://github.com/SchedMD/slurm"
 
 LICENSE="GPL-2"
 SLOT="0"
-IUSE="debug hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa ofed pam perl slurmdbd static-libs ucx torque X"
+IUSE="debug hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa nvml ofed pam perl slurmdbd static-libs ucx torque X"
 
 COMMON_DEPEND="
 	!sys-cluster/torque
@@ -47,6 +47,7 @@ COMMON_DEPEND="
 	amd64? ( netloc? ( >=sys-apps/hwloc-2.1.0[netloc] ) )
 	hdf5? ( sci-libs/hdf5:= )
 	numa? ( sys-process/numactl )
+	nvml? ( dev-util/nvidia-cuda-toolkit:= )
 	ofed? ( sys-cluster/rdma-core )
 	ucx? ( sys-cluster/ucx )
 	X? ( net-libs/libssh2 )
@@ -139,6 +140,7 @@ src_configure() {
 		$(use_with munge) \
 		$(use_with json) \
 		$(use_with hdf5) \
+		$(use_with nvml nvml /opt/cuda) \
 		$(use_with ofed) \
 		$(use_with ucx) \
 		$(use_enable static-libs static) \
