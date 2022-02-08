@@ -11,7 +11,7 @@ SRC_URI="https://github.com/hpcng/${PN}/releases/download/v${PV}/${P}.tar.gz"
 
 SLOT="0"
 LICENSE="BSD"
-KEYWORDS="~amd64 ~riscv ~x86 ~amd64-linux ~x86-linux"
+KEYWORDS="amd64 ~riscv x86 ~amd64-linux ~x86-linux"
 IUSE="examples +network +suid"
 
 # Do not complain about CFLAGS etc. since go projects do not use them.
@@ -20,7 +20,7 @@ QA_FLAGS_IGNORED='.*'
 COMMON="sys-libs/libseccomp"
 BDEPEND="virtual/pkgconfig"
 DEPEND="${COMMON}
-	>=dev-lang/go-1.13.0
+	>=dev-lang/go-1.16.0
 	app-crypt/gpgme
 	dev-libs/openssl
 	sys-apps/util-linux
@@ -36,10 +36,10 @@ src_configure() {
 		-x "$(tc-getBUILD_CXX)" \
 		-C "$(tc-getCC)" \
 		-X "$(tc-getCXX)" \
-		--prefix=/usr \
-		--sysconfdir=/etc \
-		--runstatedir=/run \
-		--localstatedir=/var \
+		--prefix="${EPREFIX}"/usr \
+		--sysconfdir="${EPREFIX}"/etc \
+		--runstatedir="${EPREFIX}"/run \
+		--localstatedir="${EPREFIX}"/var \
 		$(usex network "" "--without-network") \
 		$(usex suid "" "--without-suid")
 	)
@@ -51,7 +51,7 @@ src_compile() {
 }
 
 src_install() {
-	emake DESTDIR="${ED}" -C builddir install
+	emake DESTDIR="${D}" -C builddir install
 	keepdir /var/singularity/mnt/session
 
 	# As of version 3.5.3 this seems to be very much broken, affecting
