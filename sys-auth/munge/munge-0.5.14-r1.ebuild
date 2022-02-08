@@ -1,9 +1,9 @@
-# Copyright 1999-2020 Gentoo Authors
+# Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
 
-inherit autotools user prefix
+inherit autotools prefix
 
 DESCRIPTION="An authentication service for creating and validating credentials"
 HOMEPAGE="https://github.com/dun/munge"
@@ -11,20 +11,20 @@ SRC_URI="https://github.com/dun/munge/releases/download/munge-${PV}/munge-${PV}.
 
 LICENSE="GPL-3"
 SLOT="0"
-KEYWORDS="~alpha amd64 hppa ~ia64 ~mips ppc ppc64 sparc x86"
+KEYWORDS="~alpha amd64 ~arm64 ~hppa ~ia64 ~mips ppc ppc64 ~riscv sparc x86"
 IUSE="debug gcrypt static-libs"
 
 DEPEND="
 	app-arch/bzip2
 	sys-libs/zlib
 	gcrypt? ( dev-libs/libgcrypt:0 )
-	!gcrypt? ( dev-libs/openssl:0= )"
-RDEPEND="${DEPEND}"
-
-pkg_setup() {
-	enewgroup munge
-	enewuser munge -1 -1 /var/lib/munge munge
-}
+	!gcrypt? ( dev-libs/openssl:0= )
+"
+RDEPEND="
+	${DEPEND}
+	acct-group/munge
+	acct-user/munge
+"
 
 src_prepare() {
 	default
@@ -35,12 +35,15 @@ src_prepare() {
 }
 
 src_configure() {
-	econf \
-		--localstatedir="${EPREFIX}"/var \
-		--with-runstatedir="${EPREFIX}"/run \
-		--with-crypto-lib=$(usex gcrypt libgcrypt openssl) \
-		$(use_enable debug) \
+	local myeconfargs=(
+		--localstatedir="${EPREFIX}"/var
+		--with-runstatedir="${EPREFIX}"/run
+		--with-crypto-lib=$(usex gcrypt libgcrypt openssl)
+		$(use_enable debug)
 		$(use_enable static-libs static)
+	)
+
+	econf "${myeconfargs[@]}"
 }
 
 src_install() {
@@ -48,12 +51,13 @@ src_install() {
 
 	default
 
-	# 450830
+	# Bug 450830
 	if [ -d "${ED}"/run ]; then
 		rm -rf "${ED}"/run || die
 	fi
 
 	dodir /etc/munge
+	keepdir /var/{lib,log}/munge
 
 	for d in "init.d" "default" "sysconfig"; do
 		if [ -d "${ED}"/etc/${d} ]; then
@@ -67,6 +71,4 @@ src_install() {
 	if ! use static-libs; then
 		find "${D}" -name '*.la' -delete || die
 	fi
-
-	keepdir /var/{lib,log}/munge
 }
