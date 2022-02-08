@@ -1,11 +1,11 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 # TODO: test phase
 
 EAPI=7
 
-PYTHON_COMPAT=( python{3_8,3_9} )
+PYTHON_COMPAT=( python{3_8,3_9,3_10} )
 PYTHON_REQ_USE="xml"
 
 inherit distutils-r1
