@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+    <use>
+        <flag name="neigh">Enable iwpmd support</flag>
+        <flag name="python">Enable pyverbs support</flag>
+        <flag name="valgrind">Enable valgrind notations</flag>
+    </use>
+    <upstream>
+        <remote-id type="github">linux-rdma/rdma-core</remote-id>
+    </upstream>
+</pkgmetadata>
