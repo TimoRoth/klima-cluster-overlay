@@ -1,4 +1,4 @@
-# Copyright 2021 Gentoo Authors
+# Copyright 2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=7
@@ -19,10 +19,6 @@ IUSE="infiniband"
 MODULE_NAMES="beegfs(beegfs:client_module/build)"
 MODULESD_BEEGFS_ALIASES=("fs-beegfs beegfs")
 BUILD_PARAMS="BEEGFS_VERSION='${PV}'"
-
-PATCHES=(
-	"${FILESDIR}"/beegfs-kmod-7.2.1-linux-5.10-compat.patch
-)
 
 beegfs_version_check() {
 	if ! kernel_is 5 10; then
