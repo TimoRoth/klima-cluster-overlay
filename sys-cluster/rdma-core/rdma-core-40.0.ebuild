@@ -1,21 +1,21 @@
 # Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
-PYTHON_COMPAT=( python3_{6..10} )
+PYTHON_COMPAT=( python3_{8..10} )
 
 inherit cmake python-single-r1 udev systemd
 
 DESCRIPTION="Userspace components for the Linux Kernel's drivers/infiniband subsystem"
 HOMEPAGE="https://github.com/linux-rdma/rdma-core"
 
-if [[ ${PV} == "9999" ]]; then
+if [[ ${PV} == *9999 ]]; then
 	inherit git-r3
 	EGIT_REPO_URI="https://github.com/linux-rdma/rdma-core"
 else
 	SRC_URI="https://github.com/linux-rdma/rdma-core/archive/v${PV}.tar.gz -> ${P}.tar.gz"
-	KEYWORDS="~alpha amd64 arm arm64 ~hppa ~ia64 ppc ppc64 ~riscv ~s390 sparc x86"
+	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
 fi
 
 LICENSE="|| ( GPL-2 ( CC0-1.0 MIT BSD BSD-with-attribution ) )"
@@ -56,28 +56,26 @@ RDEPEND="${COMMON_DEPEND}
 
 BDEPEND="virtual/pkgconfig"
 
-PATCHES=( "${FILESDIR}"/${P}-musl.patch )
+PATCHES=( "${FILESDIR}"/${PN}-39.0-RDMA_BuildType.patch )
 
 pkg_setup() {
 	use python && python-single-r1_pkg_setup
-
 }
 
 src_configure() {
 	local mycmakeargs=(
 		-DCMAKE_INSTALL_SYSCONFDIR="${EPREFIX}"/etc
 		-DCMAKE_INSTALL_RUNDIR=/run
-		-DCMAKE_INSTALL_SHAREDSTATEDIR=/var/lib
-		-DCMAKE_INSTALL_UDEV_RULESDIR="${EPREFIX}""$(get_udevdir)"/rules.d
+		-DCMAKE_INSTALL_SHAREDSTATEDIR="${EPREFIX}"/var/lib
+		-DCMAKE_INSTALL_UDEV_RULESDIR="${EPREFIX}$(get_udevdir)"/rules.d
 		-DCMAKE_INSTALL_SYSTEMD_SERVICEDIR="$(systemd_get_systemunitdir)"
-		-DCMAKE_DISABLE_FIND_PACKAGE_Systemd="$(usex systemd no yes)"
+		-DCMAKE_DISABLE_FIND_PACKAGE_Systemd="$(usex !systemd)"
 		-DENABLE_VALGRIND="$(usex valgrind)"
 		-DENABLE_RESOLVE_NEIGH="$(usex neigh)"
 		-DENABLE_STATIC="$(usex static-libs)"
-		-DNO_PYVERBS="$(usex python OFF ON)"
+		-DNO_PYVERBS="$(usex !python)"
 		-DNO_MAN_PAGES=1
 	)
-
 	cmake_src_configure
 }
 
