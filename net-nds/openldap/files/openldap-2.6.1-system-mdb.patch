@@ -1,20 +1,6 @@
-From 8196d773dac719c9af1a963e7fb3398e006c1d20 Mon Sep 17 00:00:00 2001
-From: BtbN <btbn@btbn.de>
-Date: Mon, 28 Jun 2021 18:37:55 +0200
-Subject: [PATCH] Unbundle lmdb
-
----
- build/openldap.m4                  | 33 ++++++++++++++++++++++++++++++
- build/top.mk                       |  1 +
- configure.ac                       | 26 +++++++++++++++++++++++
- servers/slapd/back-mdb/Makefile.in | 11 ++--------
- 4 files changed, 62 insertions(+), 9 deletions(-)
-
-diff --git a/build/openldap.m4 b/build/openldap.m4
-index e467ccb78..90d71d0e8 100644
 --- a/build/openldap.m4
 +++ b/build/openldap.m4
-@@ -243,6 +243,39 @@ OL_RESOLVER_TRY(ol_cv_resolver_none)
+@@ -243,6 +243,40 @@ OL_RESOLVER_TRY(ol_cv_resolver_none)
  OL_RESOLVER_TRY(ol_cv_resolver_resolv,[-lresolv])
  OL_RESOLVER_TRY(ol_cv_resolver_bind,[-lbind])
  ])
@@ -26,8 +12,8 @@ index e467ccb78..90d71d0e8 100644
 +	AC_EGREP_CPP(__mdb_version_compat,[
 +#include <lmdb.h>
 +
-+/* require 0.9.29 or later */
-+#if MDB_VERSION_FULL >= 0x00000009001D
++/* require 0.9.18 or later */
++#if MDB_VERSION_FULL >= 0x000000090012
 +	__mdb_version_compat
 +#endif
 +	], [ol_cv_mdb_compat=yes], [ol_cv_mdb_compat=no])])
@@ -51,14 +37,13 @@ index e467ccb78..90d71d0e8 100644
 +fi
 +])
 +
++
  dnl
  dnl ====================================================================
  dnl Check POSIX Thread version 
-diff --git a/build/top.mk b/build/top.mk
-index 38ce146d7..1f43af24d 100644
 --- a/build/top.mk
 +++ b/build/top.mk
-@@ -165,6 +165,7 @@ CLIENT_LIBS = @CLIENT_LIBS@
+@@ -164,6 +164,7 @@ CLIENT_LIBS = @CLIENT_LIBS@
  LUTIL_LIBS = @LUTIL_LIBS@
  LTHREAD_LIBS = @LTHREAD_LIBS@
  
@@ -66,11 +51,9 @@ index 38ce146d7..1f43af24d 100644
  SLAPD_NDB_LIBS = @SLAPD_NDB_LIBS@
  WT_LIBS = @WT_LIBS@
  
-diff --git a/configure.ac b/configure.ac
-index 2aac52714..53e3d89c0 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -551,6 +551,7 @@ AC_MSG_RESULT(done)
+@@ -547,6 +547,7 @@ AC_MSG_RESULT(done)
  dnl ----------------------------------------------------------------
  dnl Initialize vars
  LDAP_LIBS=
@@ -78,14 +61,14 @@ index 2aac52714..53e3d89c0 100644
  SLAPD_NDB_LIBS=
  SLAPD_NDB_INCS=
  LTHREAD_LIBS=
-@@ -1824,6 +1825,30 @@ else
-  	ol_cv_func_gethostbyaddr_r_nargs=0
- fi
+@@ -646,6 +647,32 @@ dnl Checks for programs
+ 
+ AC_DEFINE(HAVE_MKVERSION, 1, [define this if you have mkversion])
  
 +dnl ----------------------------------------------------------------
 +ol_link_mdb=no
 +
-+if test $ol_enable_mdb != no; then
++AS_IF([test x$ol_enable_mdb != xno], [
 +	OL_MDB
 +
 +	if test $ol_cv_mdb = no ; then
@@ -104,21 +87,21 @@ index 2aac52714..53e3d89c0 100644
 +	SLAPD_LIBS="$SLAPD_LIBS \$(MDB_LIBS)"
 +
 +	ol_link_mdb=yes
-+fi
++])
++
++dnl ----------------------------------------------------------------
 +
  dnl ----------------------------------------------------------------
- 
- if test $ol_enable_dynamic = yes && test $enable_shared = yes ; then
-@@ -3201,6 +3226,7 @@ AC_SUBST(LDAP_LIBS)
+ dnl
+ dnl Determine which C translator to use
+@@ -3150,6 +3177,7 @@ dnl pwmods
+ AC_SUBST(LDAP_LIBS)
  AC_SUBST(CLIENT_LIBS)
  AC_SUBST(SLAPD_LIBS)
- AC_SUBST(BALANCER_LIBS)
 +AC_SUBST(MDB_LIBS)
+ AC_SUBST(BALANCER_LIBS)
  AC_SUBST(SLAPD_NDB_LIBS)
  AC_SUBST(SLAPD_NDB_INCS)
- AC_SUBST(LTHREAD_LIBS)
-diff --git a/servers/slapd/back-mdb/Makefile.in b/servers/slapd/back-mdb/Makefile.in
-index 6d64824da..ce18b9341 100644
 --- a/servers/slapd/back-mdb/Makefile.in
 +++ b/servers/slapd/back-mdb/Makefile.in
 @@ -25,11 +25,10 @@ OBJS = init.lo tools.lo config.lo \
@@ -155,6 +138,3 @@ index 6d64824da..ce18b9341 100644
 -
  veryclean-local-lib: FORCE
  	$(RM) $(XXHEADERS) $(XXSRCS) .links
--- 
-2.31.1
-
