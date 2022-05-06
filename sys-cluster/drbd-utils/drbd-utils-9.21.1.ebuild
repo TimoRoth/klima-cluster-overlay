@@ -102,6 +102,7 @@ src_install() {
 
 pkg_postinst() {
 	tmpfiles_process drbd.conf
+	udev_reload
 
 	einfo
 	einfo "Please copy and gunzip the configuration file:"
