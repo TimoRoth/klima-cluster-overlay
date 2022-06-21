@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<use>
+		<flag name="infiniband">Build infiniband core modules</flag>
+		<flag name="mlx5">Build mlx5 ib/en modules</flag>
+		<flag name="nfs">Build nfs/rdma modules</flag>
+		<flag name="nvme">Build nvme-over-fabric enabmed nvme modules</flag>
+		<flag name="gds">Build GPU direct storage modules</flag>
+	</use>
+</pkgmetadata>
