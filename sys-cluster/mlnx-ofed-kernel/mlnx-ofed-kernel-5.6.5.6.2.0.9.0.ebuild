@@ -15,7 +15,7 @@ SRC_URI="https://content.mellanox.com/ofed/MLNX_OFED-${MLNX_OFED_VER}/MLNX_OFED_
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64"
-IUSE="gds +infiniband +mlx5 nfs nvme"
+IUSE="gds +mlx5 nfs nvme"
 
 DEPEND=""
 RDEPEND="${DEPEND}"
@@ -35,16 +35,15 @@ pkg_setup() {
 		~!CIFS_SMB_DIRECT
 		~!NET_9P_RDMA"
 
+	# rnbd needs rtrs symbols mlnx_ofed does not provide
+	CONFIG_CHECK+=" ~!BLK_DEV_RNBD"
+
 	# The nvme fabric driver hard-depends on it
 	use nvme && CONFIG_CHECK+=" CONFIGFS_FS"
 
-	# rnbd needs rtrs symbols mlnx_ofed does not provide
-	use infiniband && CONFIG_CHECK+=" ~!BLK_DEV_RNBD"
-
 	check_extra_config
 
-	REQ_MODULES=""
-	use infiniband && REQ_MODULES+=" INFINIBAND"
+	REQ_MODULES="INFINIBAND"
 	use nvme && REQ_MODULES+=" NVME_TARGET NVME_CORE"
 	use mlx5 && REQ_MODULES+=" MLX5_CORE MLX5_INFINIBAND MLXFW"
 	use nfs && REQ_MODULES+=" SUNRPC_XPRT_RDMA"
@@ -67,9 +66,6 @@ src_configure() {
 		--kernel-sources="${KERNEL_DIR}"
 		--with-linux="${KERNEL_DIR}"
 		--with-linux-obj="${KERNEL_DIR}"
-	)
-
-	use infiniband && myconf+=(
 		--with-core-mod
 		--with-user_mad-mod
 		--with-user_access-mod
