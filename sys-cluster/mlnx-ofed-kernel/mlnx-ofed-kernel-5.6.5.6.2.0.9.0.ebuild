@@ -24,10 +24,34 @@ BDEPEND=""
 S="${WORKDIR}/mlnx-ofed-kernel-${MLNX_OFED_KERNEL_VER}"
 
 pkg_setup() {
-	CONFIG_CHECK=""
+	if ! linux_config_exists; then
+		eerror "Unable to check your kernel"
+		return
+	fi
+
+	# If one of these two is enabled, mlnx_ofed builds a dummy
+	# and kills smb/9p support entirely.
+	CONFIG_CHECK="
+		~!CIFS_SMB_DIRECT
+		~!NET_9P_RDMA"
+
+	# The nvme fabric driver hard-depends on it
 	use nvme && CONFIG_CHECK+=" CONFIGFS_FS"
-	use infiniband && CONFIG_CHECK+=" ~!CONFIG_BLK_DEV_RNBD"
-	linux-mod_pkg_setup
+
+	# rnbd needs rtrs symbols mlnx_ofed does not provide
+	use infiniband && CONFIG_CHECK+=" ~!BLK_DEV_RNBD"
+
+	check_extra_config
+
+	REQ_MODULES=""
+	use infiniband && REQ_MODULES+=" INFINIBAND"
+	use nvme && REQ_MODULES+=" NVME_TARGET NVME_CORE"
+	use mlx5 && REQ_MODULES+=" MLX5_CORE MLX5_INFINIBAND MLXFW"
+	use nfs && REQ_MODULES+=" SUNRPC_XPRT_RDMA"
+	for module in ${REQ_MODULES}; do
+		einfo "Checking whether ${module} is a module..."
+		linux_chkconfig_builtin ${module} && ewarn "${module} has to be a module (or disabled)!"
+	done
 }
 
 src_unpack() {
@@ -53,14 +77,14 @@ src_configure() {
 		--with-ipoib-mod
 	)
 
-	use nfs && myconf+=(
-		--with-nfsrdma-mod
-	)
-
 	use mlx5 && myconf+=(
 		--with-mlx5-mod
 		--with-mlxfw-mod
 		--with-mlxdevm-mod
+	)
+
+	use nfs && myconf+=(
+		--with-nfsrdma-mod
 	)
 
 	use nvme && myconf+=(
