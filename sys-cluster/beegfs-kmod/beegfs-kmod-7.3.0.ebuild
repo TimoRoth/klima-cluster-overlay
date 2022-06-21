@@ -1,7 +1,7 @@
 # Copyright 2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 inherit git-r3 linux-info linux-mod
 
@@ -19,6 +19,12 @@ IUSE="infiniband"
 MODULE_NAMES="beegfs(beegfs:client_module/build)"
 MODULESD_BEEGFS_ALIASES=("fs-beegfs beegfs")
 BUILD_PARAMS="BEEGFS_VERSION='${PV}'"
+
+PATCHES=(
+	"${FILESDIR}"/"${PN}"-7.3.0-fix-iov_iter_type-compat.patch
+	"${FILESDIR}"/"${PN}"-7.3.0-fix-removed-include.patch
+	"${FILESDIR}"/"${PN}"-7.3.0-add-userns-perms.patch
+)
 
 beegfs_version_check() {
 	if ! kernel_is 5 10; then
