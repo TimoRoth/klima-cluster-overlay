@@ -26,6 +26,7 @@ S="${WORKDIR}/mlnx-ofed-kernel-${MLNX_OFED_KERNEL_VER}"
 pkg_setup() {
 	CONFIG_CHECK=""
 	use nvme && CONFIG_CHECK+=" CONFIGFS_FS"
+	use infiniband && CONFIG_CHECK+=" ~!CONFIG_BLK_DEV_RNBD"
 	linux-mod_pkg_setup
 }
 
