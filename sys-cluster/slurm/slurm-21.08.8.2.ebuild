@@ -96,7 +96,7 @@ src_prepare() {
 	tc-ld-disable-gold
 	default
 
-	# pids should go to /var/run/slurm
+	# pids should go to /run/slurm
 	sed \
 		-e 's:/tmp:/var/tmp:g' \
 		-e "s:/var/run/slurmctld.pid:${EPREFIX}/run/slurm/slurmctld.pid:g" \
@@ -139,7 +139,7 @@ src_configure() {
 		$(use_enable X x11) \
 		$(use_with munge) \
 		$(use_with json) \
-		$(use_with hdf5) \
+		$(use_with hdf5)$(use hdf5 && echo "=${EPREFIX}/usr/bin/h5cc") \
 		$(use_with nvml nvml /opt/cuda) \
 		$(use_with ofed) \
 		$(use_with ucx) \
