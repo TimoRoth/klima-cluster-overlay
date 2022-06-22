@@ -1,7 +1,7 @@
 # Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 LUA_COMPAT=( lua5-{1..4} )
 
@@ -18,7 +18,7 @@ else
 	MY_P="${PN}-${MY_PV}"
 	INHERIT_GIT=""
 	SRC_URI="https://github.com/SchedMD/slurm/archive/${MY_P}.tar.gz"
-	KEYWORDS="~amd64 ~riscv ~x86"
+	KEYWORDS="~amd64"
 fi
 
 inherit autotools bash-completion-r1 lua-single pam perl-module prefix toolchain-funcs systemd ${INHERIT_GIT} tmpfiles
@@ -28,7 +28,7 @@ HOMEPAGE="https://www.schedmd.com https://github.com/SchedMD/slurm"
 
 LICENSE="GPL-2"
 SLOT="0"
-IUSE="debug hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa nvml ofed pam perl slurmdbd static-libs ucx torque X"
+IUSE="+cgroupv2 debug hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa nvml ofed pam perl slurmdbd static-libs ucx torque X"
 
 COMMON_DEPEND="
 	!sys-cluster/torque
@@ -44,6 +44,7 @@ COMMON_DEPEND="
 	lua? ( ${LUA_DEPS} )
 	ipmi? ( sys-libs/freeipmi )
 	json? ( dev-libs/json-c:= )
+	cgroupv2? ( sys-apps/dbus sys-kernel/linux-headers )
 	amd64? ( netloc? ( >=sys-apps/hwloc-2.1.0[netloc] ) )
 	hdf5? ( sci-libs/hdf5:= )
 	numa? ( sys-process/numactl )
@@ -52,7 +53,7 @@ COMMON_DEPEND="
 	ucx? ( sys-cluster/ucx )
 	X? ( net-libs/libssh2 )
 	perl? ( dev-lang/perl[ithreads] )
-	>=sys-apps/hwloc-1.1.1-r1
+	>=sys-apps/hwloc-1.1.1-r1:=
 	sys-libs/ncurses:0=
 	app-arch/lz4:0=
 	dev-libs/glib:2=
@@ -132,6 +133,7 @@ src_configure() {
 	use pam && myconf+=( --with-pam_dir=$(getpam_mod_dir) )
 	use mysql || myconf+=( --without-mysql_config )
 	use amd64 && myconf+=( $(use_with netloc) )
+	use cgroupv2 && myconf+=( --with-bpf="${EPREFIX}"/usr )
 	econf "${myconf[@]}" \
 		$(use_enable debug) \
 		$(use_enable lua) \
@@ -139,12 +141,13 @@ src_configure() {
 		$(use_enable X x11) \
 		$(use_with munge) \
 		$(use_with json) \
-		$(use_with hdf5)$(use hdf5 && echo "=${EPREFIX}/usr/bin/h5cc") \
+		$(use_with hdf5) \
 		$(use_with nvml nvml /opt/cuda) \
 		$(use_with ofed) \
 		$(use_with ucx) \
 		$(use_enable static-libs static) \
 		$(use_enable multiple-slurmd)
+	unset myconf
 
 	# --htmldir does not seems to propagate... Documentations are installed
 	# in /usr/share/doc/slurm-2.3.0/html
