@@ -4,5 +4,6 @@
 	<use>
 		<flag name="munge">Enable authentication via munge</flag>
 		<flag name="pmi">Build PMI1 and PMI2 interface</flag>
+		<flag name="tools">Enable PMIx tools</flag>
 	</use>
 </pkgmetadata>
