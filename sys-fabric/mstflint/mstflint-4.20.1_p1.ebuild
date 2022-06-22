@@ -1,7 +1,7 @@
 # Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 inherit autotools
 
@@ -9,7 +9,7 @@ DESCRIPTION="Mstflint - an open source version of MFT (Mellanox Firmware Tools)"
 HOMEPAGE="https://github.com/Mellanox/mstflint"
 LICENSE="|| ( GPL-2 BSD-2 )"
 KEYWORDS="~amd64 ~x86"
-EGIT_COMMIT="5b34f7a86d0b5862b0e6d5cfaf06869a85b466cb"
+EGIT_COMMIT="d23c7b44193a6697a49211d2232dfe094a0e6530"
 MY_PV=${PV/_p/-}
 MY_P=""
 SRC_URI="https://github.com/Mellanox/mstflint/archive/v${MY_PV}.tar.gz -> ${P}.tar.gz"
@@ -29,11 +29,15 @@ S="${WORKDIR}/${PN}-${MY_PV}"
 src_prepare() {
 	default
 	echo '#define TOOLS_GIT_SHA "'${EGIT_COMMIT}'"' > ./common/gitversion.h || die
+	eautoreconf
 }
 
 src_configure() {
-	eautoreconf
-	econf $(use_enable inband) $(use_enable ssl openssl) $(use adb-generic-tools && printf -- '--enable-adb-generic-tools')
+	econf \
+		--enable-static \
+		$(use_enable inband) \
+		$(use_enable ssl openssl) \
+		$(use adb-generic-tools && printf -- '--enable-adb-generic-tools')
 }
 
 src_compile() {
