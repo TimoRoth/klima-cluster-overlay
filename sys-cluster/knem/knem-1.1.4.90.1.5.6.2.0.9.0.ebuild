@@ -1,24 +1,22 @@
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 inherit autotools linux-mod linux-info toolchain-funcs udev multilib
 
+MLNX_OFED_VER="$(ver_cut 6-7)-$(ver_cut 8-)"
+KNEM_VER="$(ver_cut 1-4)mlnx$(ver_cut 5)"
+
 DESCRIPTION="High-Performance Intra-Node MPI Communication"
 HOMEPAGE="http://knem.gforge.inria.fr/"
-if [[ ${PV} == "9999" ]] ; then
-	EGIT_REPO_URI="https://gforge.inria.fr/git/knem/knem.git"
-	inherit git-r3
-else
-	SRC_URI="https://gitlab.inria.fr/knem/knem/-/archive/${P}/${PN}-${P}.tar.bz2"
-	KEYWORDS="~amd64 ~riscv ~x86"
-	S="${WORKDIR}/${PN}-${P}"
-fi
+SRC_URI="https://content.mellanox.com/ofed/MLNX_OFED-${MLNX_OFED_VER}/MLNX_OFED_SRC-debian-${MLNX_OFED_VER}.tgz"
+KEYWORDS="~amd64 ~riscv ~x86"
+S="${WORKDIR}/${PN}-${KNEM_VER}"
 
 LICENSE="GPL-2 LGPL-2"
 SLOT="0"
-IUSE="debug modules"
+IUSE="debug +modules"
 
 DEPEND="
 		sys-apps/hwloc
@@ -32,25 +30,29 @@ BUILD_TARGETS="all"
 BUILD_PARAMS="KDIR=${KERNEL_DIR}"
 
 pkg_setup() {
-	linux-info_pkg_setup
 	CONFIG_CHECK="DMA_ENGINE"
-	check_extra_config
+	linux-info_pkg_setup
 	linux-mod_pkg_setup
-	ARCH="$(tc-arch-kernel)"
-	ABI="${KERNEL_ABI}"
+	export ARCH="$(tc-arch-kernel)"
+	export ABI="${KERNEL_ABI}"
+}
+
+src_unpack() {
+	default
+	unpack "MLNX_OFED_SRC-${MLNX_OFED_VER}/SOURCES/${PN}_${KNEM_VER}.orig.tar.gz"
 }
 
 src_prepare() {
-	sed 's:driver/linux::g' -i Makefile.am || die "sed failed"
-	sed 's:M=dummy:M=$PWD:g' -i configure.ac || die "sed failed"
-	eautoreconf
 	default
+	sed -ie "s|driver/linux||g" Makefile.am || die
+	eautoreconf
 }
 
 src_configure() {
 	econf \
 		--enable-hwloc \
 		--with-linux="${KERNEL_DIR}" \
+		--with-linux-build="${KERNEL_DIR}" \
 		--with-linux-release=${KV_FULL} \
 		$(use_enable debug)
 }
@@ -58,22 +60,29 @@ src_configure() {
 src_compile() {
 	default
 	if use modules; then
-		cd "${S}/driver/linux"
-		linux-mod_src_compile || die "failed to build driver"
+		linux-mod_src_compile
 	fi
 }
 
 src_install() {
 	default
 	if use modules; then
-		cd "${S}/driver/linux"
-		linux-mod_src_install || die "failed to install driver"
+		linux-mod_src_install
 	fi
 
 	# Drop funny unneded stuff
 	rm "${ED}/usr/sbin/knem_local_install" || die
 	rmdir "${ED}/usr/sbin" || die
+
 	# install udev rules
 	udev_dorules "${FILESDIR}/45-knem.rules"
 	rm "${ED}/etc/10-knem.rules" || die
+}
+
+pkg_postinst() {
+	udev_reload
+}
+
+pkg_postrm() {
+	udev_reload
 }
