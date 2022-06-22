@@ -115,7 +115,7 @@ src_install() {
 
 	keepdir /var/lib/drbd
 
-	newtmpfiles scripts/drbd.tmpfiles.conf drbd.conf
+	newtmpfiles "${FILESDIR}/drbd.tmpfiles" drbd.conf
 
 	# https://bugs.gentoo.org/698304
 	[[ "$(get_libdir)" != "lib" ]] && dosym "../$(get_libdir)/drbd" /lib/drbd
