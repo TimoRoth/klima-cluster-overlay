@@ -1,7 +1,7 @@
 # Copyright 1999-2022 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=7
+EAPI=8
 
 inherit autotools
 
@@ -40,4 +40,9 @@ src_configure() {
 
 src_compile() {
 	BASE_CFLAGS="" emake
+}
+
+src_install() {
+	default
+	find "${ED}" -name '*.la' -delete || die
 }
