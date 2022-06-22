@@ -49,7 +49,7 @@ pkg_setup() {
 	use nfs && REQ_MODULES+=" SUNRPC_XPRT_RDMA"
 	for module in ${REQ_MODULES}; do
 		einfo "Checking whether ${module} is a module..."
-		linux_chkconfig_builtin ${module} && ewarn "${module} has to be a module (or disabled)!"
+		linux_chkconfig_module ${module} || ewarn "${module} has to be a module (not built-in or disabled)!"
 	done
 }
 
