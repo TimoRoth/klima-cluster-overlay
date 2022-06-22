@@ -1,2 +1,0 @@
-d /run/drbd 755 root root -
-d /run/lock/drbd 755 root root -
