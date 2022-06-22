@@ -94,3 +94,11 @@ src_install() {
 
 	use python && python_optimize
 }
+
+pkg_postinst() {
+	udev_reload
+}
+
+pkg_postrm() {
+	udev_reload
+}
