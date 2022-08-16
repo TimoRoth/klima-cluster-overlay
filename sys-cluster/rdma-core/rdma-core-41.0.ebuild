@@ -3,19 +3,19 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{8..10} )
+PYTHON_COMPAT=( python3_{8..11} )
 
 inherit cmake python-single-r1 udev systemd
 
 DESCRIPTION="Userspace components for the Linux Kernel's drivers/infiniband subsystem"
 HOMEPAGE="https://github.com/linux-rdma/rdma-core"
 
-if [[ ${PV} == *9999 ]]; then
+if [[ ${PV} == "9999" ]]; then
 	inherit git-r3
 	EGIT_REPO_URI="https://github.com/linux-rdma/rdma-core"
 else
 	SRC_URI="https://github.com/linux-rdma/rdma-core/archive/v${PV}.tar.gz -> ${P}.tar.gz"
-	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
+	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
 fi
 
 LICENSE="|| ( GPL-2 ( CC0-1.0 MIT BSD BSD-with-attribution ) )"
@@ -66,8 +66,8 @@ src_configure() {
 	local mycmakeargs=(
 		-DCMAKE_INSTALL_SYSCONFDIR="${EPREFIX}"/etc
 		-DCMAKE_INSTALL_RUNDIR=/run
-		-DCMAKE_INSTALL_SHAREDSTATEDIR="${EPREFIX}"/var/lib
-		-DCMAKE_INSTALL_UDEV_RULESDIR="${EPREFIX}$(get_udevdir)"/rules.d
+		-DCMAKE_INSTALL_SHAREDSTATEDIR=/var/lib
+		-DCMAKE_INSTALL_UDEV_RULESDIR="${EPREFIX}""$(get_udevdir)"/rules.d
 		-DCMAKE_INSTALL_SYSTEMD_SERVICEDIR="$(systemd_get_systemunitdir)"
 		-DCMAKE_DISABLE_FIND_PACKAGE_Systemd="$(usex !systemd)"
 		-DENABLE_VALGRIND="$(usex valgrind)"
@@ -76,6 +76,7 @@ src_configure() {
 		-DNO_PYVERBS="$(usex !python)"
 		-DNO_MAN_PAGES=1
 	)
+
 	cmake_src_configure
 }
 
