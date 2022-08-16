@@ -12,11 +12,12 @@ BIS_PV=20140524
 BIS_P="${BIS_PN}-${BIS_PV}"
 
 DESCRIPTION="LDAP suite of application and development tools"
-HOMEPAGE="https://www.OpenLDAP.org/"
-
+HOMEPAGE="https://www.openldap.org/"
 SRC_URI="
 	https://gitlab.com/openldap/${PN}/-/archive/OPENLDAP_REL_ENG_${MY_PV}/${PN}-OPENLDAP_REL_ENG_${MY_PV}.tar.gz
-	mirror://gentoo/${BIS_P}"
+	mirror://gentoo/${BIS_P}
+"
+S="${WORKDIR}"/${PN}-OPENLDAP_REL_ENG_${MY_PV}
 
 LICENSE="OPENLDAP GPL-2"
 # Subslot added for bug #835654
@@ -37,8 +38,6 @@ REQUIRED_USE="cxx? ( sasl )
 	test? ( cleartext sasl )
 	autoca? ( !gnutls )
 	?? ( test minimal )"
-
-S=${WORKDIR}/${PN}-OPENLDAP_REL_ENG_${MY_PV}
 
 # openssl is needed to generate lanman-passwords required by samba
 COMMON_DEPEND="
@@ -140,7 +139,6 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-2.6.1-flags.patch
 	"${FILESDIR}"/${PN}-2.6.1-fix-missing-mapping.patch
 	"${FILESDIR}"/${PN}-2.6.1-fix-bashism-configure.patch
-	"${FILESDIR}"/${PN}-2.6.1-parallel-build.patch
 )
 
 openldap_filecount() {
