@@ -29,6 +29,10 @@ MODULE_NAMES="knem(misc:${S}/driver/linux)"
 BUILD_TARGETS="all"
 BUILD_PARAMS="KDIR=${KERNEL_DIR}"
 
+PATCHES=(
+	"${FILESDIR}"/"${PN}"-1.1.4-Fix-display-of-DMA-status.patch
+)
+
 pkg_setup() {
 	CONFIG_CHECK="DMA_ENGINE"
 	linux-info_pkg_setup

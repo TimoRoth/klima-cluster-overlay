@@ -1,0 +1,25 @@
+From bbb17f112e644972e3aa3cad3684df0cc64860b2 Mon Sep 17 00:00:00 2001
+From: Timo Rothenpieler <timo.rothenpieler@uni-bremen.de>
+Date: Tue, 16 Aug 2022 21:14:59 +0200
+Subject: [PATCH] Fix display of DMA status
+
+---
+ driver/linux/knem_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/driver/linux/knem_main.c b/driver/linux/knem_main.c
+index 9577c2c..819433d 100644
+--- a/driver/linux/knem_main.c
++++ b/driver/linux/knem_main.c
+@@ -473,7 +473,7 @@ knem_read_counters(char __user * buff, size_t count, loff_t* offp)
+ 			  " Flags: forcing 0x%x, ignoring 0x%x\n", knem_force_flags, knem_ignore_flags);
+ 	tmplen = tmplen >= rlen ? rlen : tmplen; tmp += tmplen; rlen -= tmplen;
+ 
+-#ifdef CONFIG_NET_DMA
++#ifdef KNEM_HAVE_DMA_ENGINE
+ 	if (!knem__dmacpy)
+ 		tmplen = snprintf(tmp, rlen,
+ 				  " DMAEngine: KernelSupported Disabled\n");
+-- 
+2.35.1
+
