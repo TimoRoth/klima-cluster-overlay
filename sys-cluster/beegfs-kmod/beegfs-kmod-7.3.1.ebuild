@@ -20,18 +20,12 @@ MODULE_NAMES="beegfs(beegfs:client_module/build)"
 MODULESD_BEEGFS_ALIASES=("fs-beegfs beegfs")
 BUILD_PARAMS="BEEGFS_VERSION='${PV}'"
 
-PATCHES=(
-	"${FILESDIR}"/"${PN}"-7.3.0-fix-iov_iter_type-compat.patch
-	"${FILESDIR}"/"${PN}"-7.3.0-fix-removed-include.patch
-	"${FILESDIR}"/"${PN}"-7.3.0-add-userns-perms.patch
-)
-
 beegfs_version_check() {
-	if ! kernel_is 5 10; then
+	if ! kernel_is 5 15; then
 		ewarn "BeeGFS only supports the latest LTS kernel at the time of each respective release."
 		ewarn "(As well as the binary distro Kernels of their officialy supported distributions.)"
 		ewarn ""
-		ewarn "For ${P} that is linux-5.10."
+		ewarn "For ${P} that is linux-5.15."
 		ewarn ""
 		ewarn "Other kernels are not tested against and do not get any compatiblity fixes."
 	fi
