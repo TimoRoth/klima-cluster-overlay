@@ -30,21 +30,13 @@ BDEPEND="
 
 RDEPEND="dev-python/pyyaml[${PYTHON_USEDEP}]"
 
-PATCHES=(
-	# python3.10 related fixes taken from upstream
-	"${FILESDIR}/${P}-setrlimit-division.patch"
-	"${FILESDIR}/${P}-current-thread.patch"
-
-	"${FILESDIR}/${P}-skip-tests.patch"
-)
-
 distutils_enable_tests unittest
 
 src_prepare() {
 	default
 
 	# remove test sets that require working ssh connection
-	rm tests/{CLIClush,TaskDistant*,TreeWorker}Test.py || die
+	rm tests/{CLIClush,TaskDistant*}Test.py || die
 }
 
 python_test() {
