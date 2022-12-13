@@ -5,18 +5,15 @@ EAPI=8
 
 PYTHON_COMPAT=( python3_{8..11} )
 
-inherit cmake python-single-r1 udev systemd
+inherit cmake perl-functions python-single-r1 udev systemd
+
+MLNX_OFED_VER="$(ver_cut 4-5)-$(ver_cut 6-)"
+RDMA_CORE_VER="$(ver_cut 3)mlnx$(ver_cut 1)"
 
 DESCRIPTION="Userspace components for the Linux Kernel's drivers/infiniband subsystem"
 HOMEPAGE="https://github.com/linux-rdma/rdma-core"
-
-if [[ ${PV} == *9999 ]]; then
-	inherit git-r3
-	EGIT_REPO_URI="https://github.com/linux-rdma/rdma-core"
-else
-	SRC_URI="https://github.com/linux-rdma/rdma-core/releases/download/v${PV}/${P}.tar.gz"
-	KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
-fi
+SRC_URI="https://content.mellanox.com/ofed/MLNX_OFED-${MLNX_OFED_VER}/MLNX_OFED_SRC-debian-${MLNX_OFED_VER}.tgz"
+KEYWORDS="~alpha ~amd64 ~arm ~arm64 ~hppa ~ia64 ~loong ~ppc ~ppc64 ~riscv ~s390 ~sparc ~x86"
 
 LICENSE="|| ( GPL-2 ( CC0-1.0 MIT BSD BSD-with-attribution ) )"
 SLOT="0"
@@ -59,11 +56,20 @@ BDEPEND="
 
 PATCHES=( "${FILESDIR}"/${PN}-39.0-RDMA_BuildType.patch )
 
+S="${WORKDIR}/${PN}-${RDMA_CORE_VER}"
+
+src_unpack() {
+	default
+	unpack "MLNX_OFED_SRC-${MLNX_OFED_VER}/SOURCES/${PN}_${RDMA_CORE_VER}.orig.tar.gz"
+}
+
 src_configure() {
+	perl_set_version
 	local mycmakeargs=(
 		-DCMAKE_INSTALL_SYSCONFDIR="${EPREFIX}"/etc
 		-DCMAKE_INSTALL_RUNDIR=/run
 		-DCMAKE_INSTALL_SHAREDSTATEDIR="${EPREFIX}"/var/lib
+		-DCMAKE_INSTALL_PERLDIR="${VENDOR_LIB}"
 		-DCMAKE_INSTALL_UDEV_RULESDIR="${EPREFIX}$(get_udevdir)"/rules.d
 		-DCMAKE_INSTALL_SYSTEMD_SERVICEDIR="$(systemd_get_systemunitdir)"
 		-DCMAKE_DISABLE_FIND_PACKAGE_Systemd="$(usex !systemd)"
