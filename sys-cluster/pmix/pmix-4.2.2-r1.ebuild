@@ -12,7 +12,7 @@ SRC_URI="https://github.com/openpmix/openpmix/releases/download/v${PV}/${P}.tar.
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 ~x86 ~amd64-linux ~x86-linux"
-IUSE="debug +munge +tools"
+IUSE="debug +munge pmi +tools"
 
 RDEPEND="
 	dev-libs/libevent:=
@@ -20,6 +20,7 @@ RDEPEND="
 	sys-cluster/ucx
 	sys-libs/zlib:=
 	munge? ( sys-auth/munge )
+	pmi? ( !sys-cluster/slurm )
 "
 DEPEND="${RDEPEND}"
 
