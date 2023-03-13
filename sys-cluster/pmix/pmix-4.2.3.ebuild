@@ -1,4 +1,4 @@
-# Copyright 1999-2022 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -26,7 +26,7 @@ DEPEND="${RDEPEND}"
 
 src_prepare() {
 	default
-	eautoreconf
+	# eautoreconf ## Re-Enable once weird configure.ac doc issue is resolved, https://github.com/openpmix/openpmix/issues/2975
 }
 
 src_configure() {
@@ -39,6 +39,8 @@ src_configure() {
 
 src_install() {
 	default
+
+	find "${ED}" -name "*.la" -delete || die
 
 	# bug #884765
 	mv "${ED}"/usr/bin/pquery "${ED}"/usr/bin/pmix-pquery || die
