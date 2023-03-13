@@ -58,6 +58,11 @@ src_unpack() {
 	unpack "MLNX_OFED_SRC-${MLNX_OFED_VER}/SOURCES/mlnx-ofed-kernel_${MLNX_OFED_KERNEL_VER}.orig.tar.gz"
 }
 
+src_prepare() {
+	default
+	sed -i 's/__PEDIT_CMD_MAX/2/g' drivers/net/ethernet/mellanox/mlx5/core/en/tc_priv.h || die
+}
+
 src_configure() {
 	local myconf=(
 		--with-njobs=64
