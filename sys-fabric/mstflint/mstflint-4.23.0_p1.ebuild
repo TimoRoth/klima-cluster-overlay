@@ -9,7 +9,7 @@ DESCRIPTION="Mstflint - an open source version of MFT (Mellanox Firmware Tools)"
 HOMEPAGE="https://github.com/Mellanox/mstflint"
 LICENSE="|| ( GPL-2 BSD-2 )"
 KEYWORDS="~amd64 ~x86"
-EGIT_COMMIT="b47b67c50d4664f101a12c9e4d960d531fb45a79"
+EGIT_COMMIT="acfaf553f2f571b1f9256b6cd558eafa767d9172"
 MY_PV=${PV/_p/-}
 MY_P=""
 SRC_URI="https://github.com/Mellanox/mstflint/archive/v${MY_PV}.tar.gz -> ${P}.tar.gz"
@@ -47,4 +47,9 @@ src_compile() {
 		popd >/dev/null || die
 	fi
 	default
+}
+
+src_install() {
+	emake DESTDIR="${D}" -j1 install
+	einstalldocs
 }
