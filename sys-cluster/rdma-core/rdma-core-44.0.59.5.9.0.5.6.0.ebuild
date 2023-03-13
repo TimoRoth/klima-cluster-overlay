@@ -1,9 +1,9 @@
-# Copyright 1999-2022 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{8..11} )
+PYTHON_COMPAT=( python3_{9..11} )
 
 inherit cmake perl-functions python-single-r1 udev systemd
 
@@ -86,8 +86,7 @@ src_configure() {
 src_install() {
 	cmake_src_install
 
-	udev_dorules "${ED}"/etc/udev/rules.d/70-persistent-ipoib.rules
-	rm -r "${ED}"/etc/{udev,init.d} || die
+	udev_dorules "${ED}"/usr/share/doc/${PF}/70-persistent-ipoib.rules
 
 	if use neigh; then
 		newinitd "${FILESDIR}"/ibacm.init ibacm
