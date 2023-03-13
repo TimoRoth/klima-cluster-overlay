@@ -1,4 +1,4 @@
-# Copyright 1999-2022 Gentoo Authors
+# Copyright 1999-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -227,7 +227,8 @@ src_install() {
 	newbashcomp contribs/slurm_completion_help/slurm_completion.sh scontrol
 	bashcomp_alias scontrol \
 		sreport sacctmgr squeue scancel sshare sbcast sinfo \
-		sprio sacct salloc sbatch srun sattach sdiag sstat
+		sprio sacct salloc sbatch srun sattach sdiag sstat \
+		scrontab strigger
 	# install systemd files
 	newtmpfiles "${FILESDIR}/slurm.tmpfiles" slurm.conf
 	systemd_dounit etc/slurmd.service etc/slurmctld.service etc/slurmdbd.service
