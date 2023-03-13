@@ -23,10 +23,11 @@ RDEPEND="
 	pmi? ( !sys-cluster/slurm )
 "
 DEPEND="${RDEPEND}"
+BDEPEND="dev-lang/perl"
 
 src_prepare() {
 	default
-	# eautoreconf ## Re-Enable once weird configure.ac doc issue is resolved, https://github.com/openpmix/openpmix/issues/2975
+	perl ./autogen.pl || die
 }
 
 src_configure() {
