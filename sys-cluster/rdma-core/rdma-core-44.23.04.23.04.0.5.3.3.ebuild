@@ -8,7 +8,7 @@ PYTHON_COMPAT=( python3_{9..11} )
 inherit cmake perl-functions python-single-r1 udev systemd
 
 MLNX_OFED_VER="$(ver_cut 4-5)-$(ver_cut 6-)"
-RDMA_CORE_VER="$(ver_cut 3)mlnx$(ver_cut 1)"
+RDMA_CORE_VER="$(ver_cut 2)$(ver_cut 3)mlnx$(ver_cut 1)"
 
 DESCRIPTION="Userspace components for the Linux Kernel's drivers/infiniband subsystem"
 HOMEPAGE="https://github.com/linux-rdma/rdma-core"
