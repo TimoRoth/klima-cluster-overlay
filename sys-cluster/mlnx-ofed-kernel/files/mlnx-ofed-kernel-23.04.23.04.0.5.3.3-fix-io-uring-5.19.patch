@@ -1,0 +1,35 @@
+diff -Naur mlnx-ofed-kernel-23.04.orig/drivers/nvme/host/ioctl.c mlnx-ofed-kernel-23.04/drivers/nvme/host/ioctl.c
+--- mlnx-ofed-kernel-23.04.orig/drivers/nvme/host/ioctl.c	2023-04-28 17:43:39.000000000 +0200
++++ mlnx-ofed-kernel-23.04/drivers/nvme/host/ioctl.c	2023-05-25 01:35:20.705503093 +0200
+@@ -3,6 +3,7 @@
+  * Copyright (c) 2011-2014, Intel Corporation.
+  * Copyright (c) 2017-2021 Christoph Hellwig.
+  */
++#include <linux/version.h>
+ #include <linux/ptrace.h>	/* for force_successful_syscall_return */
+ #include <linux/nvme_ioctl.h>
+ #include <linux/io_uring.h>
+@@ -360,7 +361,11 @@
+ 	return (struct nvme_uring_cmd_pdu *)&ioucmd->pdu;
+ }
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,19,0)
++static void nvme_uring_task_cb(struct io_uring_cmd *ioucmd, unsigned issue_flags)
++#else
+ static void nvme_uring_task_cb(struct io_uring_cmd *ioucmd)
++#endif
+ {
+ 	struct nvme_uring_cmd_pdu *pdu = nvme_uring_cmd_pdu(ioucmd);
+ 	struct request *req = pdu->req;
+@@ -382,7 +387,11 @@
+ 		blk_rq_unmap_user(bio);
+ 	blk_mq_free_request(req);
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,19,0)
++	io_uring_cmd_done(ioucmd, status, result, issue_flags);
++#else
+ 	io_uring_cmd_done(ioucmd, status, result);
++#endif
+ }
+ 
+ static void nvme_uring_cmd_end_io(struct request *req, blk_status_t err)
