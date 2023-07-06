@@ -21,10 +21,6 @@ DEPEND=""
 RDEPEND="${DEPEND}"
 BDEPEND=""
 
-PATCHES=(
-	"${FILESDIR}/mlnx-ofed-kernel-23.04.23.04.0.5.3.3-fix-io-uring-5.19.patch"
-)
-
 S="${WORKDIR}/mlnx-ofed-kernel-${MLNX_OFED_KERNEL_VER}"
 
 pkg_setup() {
