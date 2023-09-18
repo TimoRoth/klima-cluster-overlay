@@ -1,7 +1,9 @@
-# Copyright 2020-2022 Gentoo Authors
+# Copyright 2020-2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
+
+inherit autotools
 
 DESCRIPTION="Network abstraction layer designed for High Availability use cases"
 HOMEPAGE="https://kronosnet.org"
@@ -9,11 +11,12 @@ SRC_URI="https://kronosnet.org/releases/${P}.tar.xz"
 
 LICENSE="LGPL-2.1"
 SLOT="0/1"
-KEYWORDS="~amd64 ~arm ~arm64 ~hppa ~ppc ~ppc64 ~x86"
+KEYWORDS="amd64 ~arm ~arm64 ~hppa ~ppc ppc64 x86"
 IUSE="doc nss +openssl lz4 lzo2 test zstd"
 RESTRICT="!test? ( test )"
 
-DEPEND=">=sys-cluster/libqb-2.0.0:=
+DEPEND="
+	>=sys-cluster/libqb-2.0.0:=
 	dev-libs/libnl:3
 	sys-libs/zlib:=
 	app-arch/bzip2:=
@@ -22,7 +25,8 @@ DEPEND=">=sys-cluster/libqb-2.0.0:=
 	lzo2? ( dev-libs/lzo:2 )
 	lz4? ( app-arch/lz4:= )
 	nss? ( dev-libs/nss )
-	openssl? ( dev-libs/openssl:= )"
+	openssl? ( dev-libs/openssl:= )
+"
 RDEPEND="${DEPEND}"
 BDEPEND="
 	doc? (
@@ -34,6 +38,13 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-1.19-no-Werror.patch
 	"${FILESDIR}"/${PN}-1.23-no-extra-fortify-source.patch
 )
+
+src_prepare() {
+	default
+
+	# For our patches
+	eautoreconf
+}
 
 src_configure() {
 	local myeconfargs=(
