@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{9..11} )
+PYTHON_COMPAT=( python3_{10..12} )
 
 inherit cmake perl-functions python-single-r1 udev systemd
 
@@ -26,13 +26,16 @@ COMMON_DEPEND="
 	neigh? ( dev-libs/libnl:3 )
 	systemd? ( sys-apps/systemd:= )
 	valgrind? ( dev-util/valgrind )
-	python? ( ${PYTHON_DEPS} )"
-DEPEND="${COMMON_DEPEND}
+	python? ( ${PYTHON_DEPS} )
+"
+DEPEND="
+	${COMMON_DEPEND}
 	python? (
 		$(python_gen_cond_dep '
-			dev-python/cython[${PYTHON_USEDEP}]
+			<dev-python/cython-3[${PYTHON_USEDEP}]
 		')
-	)"
+	)
+"
 RDEPEND="${COMMON_DEPEND}
 	!sys-fabric/infiniband-diags
 	!sys-fabric/libibverbs
@@ -48,13 +51,17 @@ RDEPEND="${COMMON_DEPEND}
 	!sys-fabric/libmlx4
 	!sys-fabric/libmlx5
 	!sys-fabric/libocrdma
-	!sys-fabric/libnes"
+	!sys-fabric/libnes
+"
 # python is required unconditionally at build-time
 BDEPEND="
 	${PYTHON_DEPS}
-	virtual/pkgconfig"
+	virtual/pkgconfig
+"
 
-PATCHES=( "${FILESDIR}"/${PN}-39.0-RDMA_BuildType.patch )
+PATCHES=(
+	"${FILESDIR}"/${PN}-39.0-RDMA_BuildType.patch
+)
 
 S="${WORKDIR}/${PN}-${RDMA_CORE_VER}"
 
@@ -65,6 +72,7 @@ src_unpack() {
 
 src_configure() {
 	perl_set_version
+
 	local mycmakeargs=(
 		-DCMAKE_INSTALL_SYSCONFDIR="${EPREFIX}"/etc
 		-DCMAKE_INSTALL_RUNDIR=/run
