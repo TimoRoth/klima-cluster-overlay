@@ -36,7 +36,6 @@ BDEPEND="
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-1.19-no-Werror.patch
-	"${FILESDIR}"/${PN}-1.23-no-extra-fortify-source.patch
 )
 
 src_prepare() {
