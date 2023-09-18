@@ -99,7 +99,7 @@ src_install() {
 
 	dodoc scripts/drbd.conf.example
 
-	dosym /usr/sbin/drbdadm /sbin/drbdadm
+	use split-usr || dosym /usr/sbin/drbdadm /sbin/drbdadm
 
 	keepdir /var/lib/drbd
 	rm -r "${ED}"/var/run || die
