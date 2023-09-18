@@ -21,11 +21,11 @@ MODULESD_BEEGFS_ALIASES=("fs-beegfs beegfs")
 BUILD_PARAMS="BEEGFS_VERSION='${PV}'"
 
 beegfs_version_check() {
-	if ! kernel_is 5 15; then
+	if ! kernel_is 6 1; then
 		ewarn "BeeGFS only supports the latest LTS kernel at the time of each respective release."
 		ewarn "(As well as the binary distro Kernels of their officialy supported distributions.)"
 		ewarn ""
-		ewarn "For ${P} that is linux-5.15."
+		ewarn "For ${P} that is linux-6.1."
 		ewarn ""
 		ewarn "Other kernels are not tested against and do not get any compatiblity fixes."
 	fi
