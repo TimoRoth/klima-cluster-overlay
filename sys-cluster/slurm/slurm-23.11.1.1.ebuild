@@ -28,13 +28,13 @@ HOMEPAGE="https://www.schedmd.com https://github.com/SchedMD/slurm"
 
 LICENSE="GPL-2"
 SLOT="0"
-IUSE="+cgroupv2 debug hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa nvml ofed pam perl slurmdbd static-libs ucx torque X"
+IUSE="+cgroupv2 debug hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa nvml ofed pam perl pmix slurmdbd static-libs ucx torque X"
 
 COMMON_DEPEND="
 	!sys-cluster/torque
 	!net-analyzer/slurm
 	!net-analyzer/sinfo
-	|| ( sys-cluster/pmix[-pmi] >=sys-cluster/openmpi-2.0.0 )
+	pmix? ( sys-cluster/pmix[-pmi] )
 	mysql? (
 		|| ( dev-db/mariadb-connector-c dev-db/mysql-connector-c )
 		slurmdbd? ( || ( dev-db/mariadb:* dev-db/mysql:* ) )
@@ -145,6 +145,7 @@ src_configure() {
 		$(use_with nvml nvml /opt/cuda) \
 		$(use_with ofed) \
 		$(use_with ucx) \
+		$(use_with pmix) \
 		$(use_enable static-libs static) \
 		$(use_enable multiple-slurmd)
 	unset myconf

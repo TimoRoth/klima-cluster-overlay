@@ -14,6 +14,7 @@
 		<flag name="nvml">Add Nvidia NVML support</flag>
 		<flag name="ofed">Add Infiniband support via ofed</flag>
 		<flag name="ucx">Add ucx transport support</flag>
+		<flag name="pmix">Enable pmix mpi support</flag>
 		<flag name="slurmdbd">Build slurmdbd</flag>
 	</use>
 </pkgmetadata>
