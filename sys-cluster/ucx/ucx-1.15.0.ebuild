@@ -14,19 +14,17 @@ S="${WORKDIR}/${PN}-${MY_PV}"
 LICENSE="BSD"
 SLOT="0"
 KEYWORDS="~amd64 -riscv ~x86 ~amd64-linux ~x86-linux"
-IUSE="+numa +openmp knem"
+IUSE="+openmp knem"
 
 RDEPEND="
 	sys-cluster/rdma-core
 	sys-libs/binutils-libs:=
-	numa? ( sys-process/numactl )
 	knem? ( >=sys-cluster/knem-1.1 )
 "
 DEPEND="${RDEPEND}"
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-1.13.0-drop-werror.patch
-	"${FILESDIR}"/${PN}-1.13.0-no-rpm-sandbox.patch
 )
 
 pkg_pretend() {
@@ -39,6 +37,7 @@ pkg_setup() {
 
 src_prepare() {
 	default
+	sed -i 's/rpm/false/g' src/uct/ib/Makefile.am || die
 	eautoreconf
 }
 
@@ -48,7 +47,6 @@ src_configure() {
 		--without-fuse3 \
 		--without-go \
 		--without-java \
-		$(use_enable numa) \
 		$(use_enable openmp) \
 		$(use_with knem)
 }
