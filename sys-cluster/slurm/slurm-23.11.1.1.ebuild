@@ -28,7 +28,7 @@ HOMEPAGE="https://www.schedmd.com https://github.com/SchedMD/slurm"
 
 LICENSE="GPL-2"
 SLOT="0"
-IUSE="+cgroupv2 debug hdf5 html ipmi json lua multiple-slurmd +munge mysql netloc numa nvml ofed pam perl pmix slurmdbd static-libs ucx torque X"
+IUSE="+cgroupv2 debug hdf5 html ipmi json lua multiple-slurmd +munge mysql numa nvml ofed pam perl pmix slurmdbd static-libs ucx torque X"
 
 COMMON_DEPEND="
 	!sys-cluster/torque
@@ -45,7 +45,6 @@ COMMON_DEPEND="
 	ipmi? ( sys-libs/freeipmi )
 	json? ( dev-libs/json-c:= )
 	cgroupv2? ( sys-apps/dbus sys-kernel/linux-headers )
-	amd64? ( netloc? ( >=sys-apps/hwloc-2.1.0[netloc] ) )
 	hdf5? ( sci-libs/hdf5:= )
 	numa? ( sys-process/numactl )
 	nvml? ( dev-util/nvidia-cuda-toolkit:= )
@@ -132,7 +131,6 @@ src_configure() {
 	)
 	use pam && myconf+=( --with-pam_dir=$(getpam_mod_dir) )
 	use mysql || myconf+=( --without-mysql_config )
-	use amd64 && myconf+=( $(use_with netloc) )
 	use cgroupv2 && myconf+=( --with-bpf="${EPREFIX}"/usr )
 	econf "${myconf[@]}" \
 		$(use_enable debug) \
