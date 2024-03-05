@@ -1,4 +1,4 @@
-# Copyright 2023 Gentoo Authors
+# Copyright 2023-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -6,7 +6,7 @@ EAPI=8
 inherit linux-info linux-mod
 
 MLNX_OFED_VER="$(ver_cut 3-4)-$(ver_cut 5-)"
-MLNX_OFED_KERNEL_VER="$(ver_cut 1-2).OFED.23.10.1.1.9.1"
+MLNX_OFED_KERNEL_VER="$(ver_cut 1-2).OFED.$(ver_cut 3-)"
 
 DESCRIPTION="Mellanox Ofed Kernel Modules"
 HOMEPAGE="https://network.nvidia.com/products/infiniband-drivers/linux/mlnx_ofed/"
