@@ -1,4 +1,4 @@
-# Copyright 2022 Gentoo Authors
+# Copyright 2023 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -8,7 +8,7 @@ inherit git-r3 linux-info linux-mod
 DESCRIPTION="The Parallel Cluster File System"
 HOMEPAGE="https://www.beegfs.io"
 
-EGIT_REPO_URI="https://git.beegfs.io/pub/v7.git"
+EGIT_REPO_URI="https://github.com/ThinkParQ/beegfs.git"
 EGIT_COMMIT="${PV}"
 
 LICENSE="GPL-2"
