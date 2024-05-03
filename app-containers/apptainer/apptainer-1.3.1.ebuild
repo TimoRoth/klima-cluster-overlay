@@ -1,4 +1,4 @@
-# Copyright 1999-2023 Gentoo Authors
+# Copyright 1999-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -11,14 +11,14 @@ SRC_URI="https://github.com/apptainer/${PN}/releases/download/v${PV}/${P}.tar.gz
 
 SLOT="0"
 LICENSE="BSD"
-KEYWORDS="~amd64 ~riscv ~x86 ~amd64-linux ~x86-linux"
+KEYWORDS="amd64 ~riscv ~x86 ~amd64-linux ~x86-linux"
 IUSE="examples +network suid systemd"
 
 # Do not complain about CFLAGS etc. since go projects do not use them.
 QA_FLAGS_IGNORED='.*'
 
 DEPEND="app-crypt/gpgme
-	>=dev-lang/go-1.19.0
+	>=dev-lang/go-1.20.0
 	dev-libs/openssl
 	sys-apps/util-linux
 	sys-fs/cryptsetup
