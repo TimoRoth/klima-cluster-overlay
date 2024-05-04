@@ -124,6 +124,8 @@ src_prepare() {
 }
 
 src_configure() {
+	append-ldflags -Wl,-z,lazy
+
 	local myconf=(
 		--sysconfdir="${EPREFIX}/etc/${PN}"
 		--with-hwloc="${EPREFIX}/usr"
