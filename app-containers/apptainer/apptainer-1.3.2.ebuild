@@ -9,8 +9,8 @@ DESCRIPTION="The container system for secure high-performance computing"
 HOMEPAGE="https://apptainer.org/"
 SRC_URI="https://github.com/apptainer/${PN}/releases/download/v${PV}/${P}.tar.gz"
 
-SLOT="0"
 LICENSE="BSD"
+SLOT="0"
 KEYWORDS="amd64 ~riscv ~x86 ~amd64-linux ~x86-linux"
 IUSE="examples +network suid systemd"
 
