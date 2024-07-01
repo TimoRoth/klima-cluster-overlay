@@ -76,10 +76,6 @@ LIBSLURMDB_PERL_S="${S}/contribs/perlapi/libslurmdb/perl"
 
 RESTRICT="test"
 
-PATCHES=(
-	"${FILESDIR}"/${PN}-21.08.0.1_autoconf-lua.patch
-)
-
 pkg_setup() {
 	use lua && lua-single_pkg_setup
 }
@@ -136,9 +132,9 @@ src_configure() {
 	use cgroupv2 && myconf+=( --with-bpf="${EPREFIX}"/usr )
 	econf "${myconf[@]}" \
 		$(use_enable debug) \
-		$(use_enable lua) \
 		$(use_enable pam) \
 		$(use_enable X x11) \
+		$(use_with lua) \
 		$(use_with munge) \
 		$(use_with json) \
 		$(use_with hdf5) \
@@ -229,7 +225,7 @@ src_install() {
 	bashcomp_alias scontrol \
 		sreport sacctmgr squeue scancel sshare sbcast sinfo \
 		sprio sacct salloc sbatch srun sattach sdiag sstat \
-		scrontab strigger
+		scrontab strigger slurmrestd
 	# install systemd files
 	newtmpfiles "${FILESDIR}/slurm.tmpfiles" slurm.conf
 	systemd_dounit etc/slurmd.service etc/slurmctld.service etc/slurmdbd.service
