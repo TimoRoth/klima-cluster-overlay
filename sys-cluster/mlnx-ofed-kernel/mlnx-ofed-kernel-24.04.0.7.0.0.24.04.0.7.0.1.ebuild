@@ -5,8 +5,8 @@ EAPI=8
 
 inherit linux-info linux-mod
 
-MLNX_OFED_VER="$(ver_cut 3-4)-$(ver_cut 5-)"
-MLNX_OFED_KERNEL_VER="$(ver_cut 1-2).OFED.$(ver_cut 3-)"
+MLNX_OFED_VER="$(ver_cut 1-2)-$(ver_cut 3-6)"
+MLNX_OFED_KERNEL_VER="$(ver_cut 7-8).OFED.$(ver_cut 7-)"
 
 DESCRIPTION="Mellanox Ofed Kernel Modules"
 HOMEPAGE="https://network.nvidia.com/products/infiniband-drivers/linux/mlnx_ofed/"
