@@ -3,7 +3,8 @@
 
 EAPI=8
 
-inherit linux-info linux-mod
+MODULES_INITRAMFS_IUSE=+initramfs
+inherit linux-info linux-mod-r1
 
 MLNX_OFED_VER="$(ver_cut 1-2)-$(ver_cut 3-6)"
 MLNX_OFED_KERNEL_VER="$(ver_cut 7-8).OFED.$(ver_cut 7-)"
@@ -51,6 +52,8 @@ pkg_setup() {
 		einfo "Checking whether ${module} is a module..."
 		linux_chkconfig_module ${module} || ewarn "${module} has to be a module (not built-in or disabled)!"
 	done
+
+	linux-mod-r1_pkg_setup
 }
 
 src_unpack() {
@@ -93,20 +96,22 @@ src_configure() {
 	)
 
 	unset ARCH CFLAGS CXXFLAGS COMMON_FLAGS
-	./configure "${myconf[@]}" || die
+	CC="${KERNEL_CC}" ./configure "${myconf[@]}" || die
 }
 
 src_compile() {
-	emake
+	emake "${MODULES_MAKEARGS[@]}"
 }
 
 src_install() {
-	emake install_modules INSTALL_MOD_PATH="${D}" INSTALL_MOD_DIR="updates" KERNELRELEASE="${KV_FULL}"
-	find "${D}" \( -type f -a -name "modules.*" \) -delete || die
+	emake "${MODULES_MAKEARGS[@]}" install_modules INSTALL_MOD_PATH="${ED}" INSTALL_MOD_DIR="updates" KERNELRELEASE="${KV_FULL}"
+	#find "${ED}" \( -type f -a -name "modules.*" \) -delete || die
 
 	insinto /usr/src/ofa_kernel/"$(uname -m)"/"${KV_FULL}"
 	doins -r include ofed_scripts compat?*
 	doins config* Module*.symvers
 
 	ln -s "$(uname -m)/${KV_FULL}" "${ED}"/usr/src/ofa_kernel/default || die
+
+	modules_post_process
 }
