@@ -51,7 +51,7 @@ COMMON_DEPEND="
 	ofed? ( sys-cluster/rdma-core )
 	ucx? ( sys-cluster/ucx )
 	X? ( net-libs/libssh2 )
-	perl? ( dev-lang/perl[ithreads] )
+	perl? ( dev-lang/perl[perl_features_ithreads] )
 	>=sys-apps/hwloc-1.1.1-r1:=
 	sys-libs/ncurses:0=
 	app-arch/lz4:0=
