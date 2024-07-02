@@ -97,8 +97,8 @@ src_configure() {
 		--with-gds
 	)
 
-	unset ARCH CFLAGS CXXFLAGS COMMON_FLAGS
-	CC="${KERNEL_CC}" ./configure "${myconf[@]}" || die
+	env -u ARCH -u CFLAGS -u CXXFLAGS -u COMMON_FLAGS \
+		CC="${KERNEL_CC}" ./configure "${myconf[@]}" || die
 }
 
 src_compile() {
