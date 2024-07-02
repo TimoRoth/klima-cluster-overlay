@@ -24,6 +24,8 @@ BDEPEND=""
 
 S="${WORKDIR}/mlnx-ofed-kernel-${MLNX_OFED_KERNEL_VER}"
 
+QA_CONFIG_IMPL_DECL_SKIP=( "*" )
+
 pkg_setup() {
 	if ! linux_config_exists; then
 		eerror "Unable to check your kernel"
@@ -105,7 +107,7 @@ src_compile() {
 
 src_install() {
 	emake "${MODULES_MAKEARGS[@]}" install_modules INSTALL_MOD_PATH="${ED}" INSTALL_MOD_DIR="updates" KERNELRELEASE="${KV_FULL}"
-	#find "${ED}" \( -type f -a -name "modules.*" \) -delete || die
+	find "${ED}" \( -type f -a -name "modules.*" \) -delete || die
 
 	insinto /usr/src/ofa_kernel/"$(uname -m)"/"${KV_FULL}"
 	doins -r include ofed_scripts compat?*
