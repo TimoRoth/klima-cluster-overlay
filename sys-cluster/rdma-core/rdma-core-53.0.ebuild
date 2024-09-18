@@ -65,7 +65,6 @@ BDEPEND="
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-39.0-RDMA_BuildType.patch
-	"${FILESDIR}"/${PN}-50.0-use-posix-version-of-basename.patch
 )
 
 src_prepare() {
