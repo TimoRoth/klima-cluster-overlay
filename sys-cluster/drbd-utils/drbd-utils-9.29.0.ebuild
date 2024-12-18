@@ -21,7 +21,8 @@ DEPEND="
 	udev? ( virtual/udev )
 "
 RDEPEND="${DEPEND}"
-BDEPEND="app-alternatives/lex"
+BDEPEND="app-alternatives/lex
+	virtual/pkgconfig"
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-9.23.1-respect-flags.patch
@@ -78,9 +79,6 @@ src_configure() {
 		--localstatedir="${EPREFIX}"/var
 		# don't autodetect systemd/sysv; install systemd and use our own openrc
 		--with-initscripttype=systemd
-		# only used for systemdunitdir and for udevdir; the latter breaks
-		# merged-usr interop
-		PKG_CONFIG=/bin/false
 		--with-systemdunitdir="${EPREFIX}"/usr/lib/systemd/system
 		--with-bashcompletion
 		--with-distro=gentoo
