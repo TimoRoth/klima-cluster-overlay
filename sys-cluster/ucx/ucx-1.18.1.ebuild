@@ -24,7 +24,7 @@ RDEPEND="
 DEPEND="${RDEPEND}"
 
 PATCHES=(
-	"${FILESDIR}"/${PN}-1.13.0-drop-werror.patch
+	"${FILESDIR}"/${PN}-1.18.1-drop-werror.patch
 )
 
 pkg_pretend() {
