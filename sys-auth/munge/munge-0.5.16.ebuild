@@ -1,4 +1,4 @@
-# Copyright 1999-2022 Gentoo Authors
+# Copyright 1999-2025 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -27,7 +27,7 @@ RDEPEND="
 	acct-group/munge
 	acct-user/munge
 "
-BDEPEND="app-arch/xz-utils[extra-filters]"
+BDEPEND="app-arch/xz-utils[extra-filters(+)]"
 
 src_prepare() {
 	default
