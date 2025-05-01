@@ -13,7 +13,7 @@ S="${WORKDIR}/${P/_/}"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="amd64 ~x86"
-IUSE="pacemaker +udev xen"
+IUSE="pacemaker +udev"
 
 DEPEND="
 	sys-apps/keyutils
@@ -56,7 +56,6 @@ src_prepare() {
 	sed -e "s:@prefix@/lib:@prefix@/$(get_libdir):" \
 		-e "s:(DESTDIR)/lib:(DESTDIR)/$(get_libdir):" \
 		-i user/*/Makefile.in || die
-	sed -i -e "s/lib/$(get_libdir)/" scripts/drbd.service || die
 
 	# Correct install paths (really correct this time)
 	sed -i -e "s:\$(sysconfdir)/bash_completion.d:$(get_bashcompdir):" \
@@ -86,7 +85,6 @@ src_configure() {
 		--without-rgmanager
 		$(use_with pacemaker)
 		$(use_with udev)
-		$(use_with xen)
 	)
 
 	econf "${myeconfargs[@]}"
