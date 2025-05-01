@@ -1,9 +1,9 @@
-# Copyright 1999-2024 Gentoo Authors
+# Copyright 1999-2025 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
 
-inherit linux-info toolchain-funcs
+inherit eapi9-ver linux-info toolchain-funcs
 
 DESCRIPTION="The container system for secure high-performance computing"
 HOMEPAGE="https://apptainer.org/"
@@ -28,8 +28,7 @@ DEPEND="app-crypt/gpgme
 		sys-fs/e2fsprogs[fuse]
 		sys-fs/squashfuse
 	)"
-RDEPEND="${DEPEND}
-	!sys-cluster/singularity"
+RDEPEND="${DEPEND}"
 BDEPEND="virtual/pkgconfig"
 
 CONFIG_CHECK="~SQUASHFS"
@@ -80,13 +79,9 @@ src_install() {
 
 pkg_postinst() {
 	if ! use suid; then
-		local oldver
-		for oldver in ${REPLACING_VERSIONS}; do
-			if ver_test "${oldver}" -lt 1.1.0; then
-				ewarn "Since version 1.1.0 ${PN} no longer installs setuid-root components by default, relying on unprivileged user namespaces instead. For details, see https://apptainer.org/docs/admin/main/user_namespace.html"
-				ewarn "Make sure user namespaces (possibly except network ones for improved security) are enabled on your system, or re-enable installation of setuid root components by passing USE=suid to ${CATEGORY}/${PN}"
-				break
-			fi
-		done
+		if ver_replacing -lt 1.1.0; then
+			ewarn "Since version 1.1.0 ${PN} no longer installs setuid-root components by default, relying on unprivileged user namespaces instead. For details, see https://apptainer.org/docs/admin/main/user_namespace.html"
+			ewarn "Make sure user namespaces (possibly except network ones for improved security) are enabled on your system, or re-enable installation of setuid root components by passing USE=suid to ${CATEGORY}/${PN}"
+		fi
 	fi
 }
