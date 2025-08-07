@@ -11,19 +11,20 @@ SRC_URI="https://github.com/apptainer/${PN}/releases/download/v${PV}/${P}.tar.gz
 
 LICENSE="BSD"
 SLOT="0"
-KEYWORDS="amd64 ~riscv ~x86 ~amd64-linux ~x86-linux"
-IUSE="examples +network suid systemd"
+KEYWORDS="~amd64 ~riscv ~x86 ~amd64-linux ~x86-linux"
+IUSE="+network rootless +seccomp suid systemd"
 
 # Do not complain about CFLAGS etc. since go projects do not use them.
 QA_FLAGS_IGNORED='.*'
 
 DEPEND="app-crypt/gpgme
-	>=dev-lang/go-1.20.0
+	>=dev-lang/go-1.23.6
 	dev-libs/openssl
 	sys-apps/util-linux
 	sys-fs/cryptsetup
 	sys-fs/squashfs-tools
-	sys-libs/libseccomp
+	rootless? ( sys-apps/shadow:= )
+	seccomp? ( sys-libs/libseccomp )
 	!suid? (
 		sys-fs/e2fsprogs[fuse]
 		sys-fs/squashfuse
@@ -40,16 +41,19 @@ PATCHES=(
 DOCS=( README.md CONTRIBUTORS.md CONTRIBUTING.md )
 
 src_configure() {
+	tc-export PKG_CONFIG
 	local myconfargs=(
-		-c "$(tc-getBUILD_CC)" \
-		-x "$(tc-getBUILD_CXX)" \
-		-C "$(tc-getCC)" \
-		-X "$(tc-getCXX)" \
-		--prefix="${EPREFIX}"/usr \
-		--sysconfdir="${EPREFIX}"/etc \
-		--runstatedir="${EPREFIX}"/run \
-		--localstatedir="${EPREFIX}"/var \
-		$(usex network "" "--without-network") \
+		-c "$(tc-getBUILD_CC)"
+		-x "$(tc-getBUILD_CXX)"
+		-C "$(tc-getCC)"
+		-X "$(tc-getCXX)"
+		--prefix="${EPREFIX}"/usr
+		--sysconfdir="${EPREFIX}"/etc
+		--runstatedir="${EPREFIX}"/run
+		--localstatedir="${EPREFIX}"/var
+		$(usev !network --without-network)
+		$(usev !seccomp --without-seccomp)
+		$(usev !rootless --without-libsubid)
 		$(use_with suid)
 	)
 	./mconfig -v ${myconfargs[@]} || die "Error invoking mconfig"
@@ -72,9 +76,7 @@ src_install() {
 	fi
 
 	einstalldocs
-	if use examples; then
-		dodoc -r examples
-	fi
+	dodoc -r examples
 }
 
 pkg_postinst() {
