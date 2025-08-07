@@ -193,8 +193,6 @@ src_install() {
 
 	dodoc -r doc/examples
 
-	rm "${ED}"/usr/share/doc/${P}/COPYING
-
 	diropts -m 0750 -o root -g dhcp
 	dodir /etc/kea
 	insopts -m 0640 -o root -g dhcp
