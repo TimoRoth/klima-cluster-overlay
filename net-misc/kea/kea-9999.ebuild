@@ -209,10 +209,10 @@ src_install() {
 	newconfd "${FILESDIR}"/${PN}-confd-r2 ${PN}
 	newinitd "${FILESDIR}"/${PN}-initd-r2 ${PN}
 
-	systemd_dounit "${FILESDIR}"/${PN}-ctrl-agent.service-r2
-	systemd_dounit "${FILESDIR}"/${PN}-dhcp-ddns.service-r2
-	systemd_dounit "${FILESDIR}"/${PN}-dhcp4.service-r2
-	systemd_dounit "${FILESDIR}"/${PN}-dhcp6.service-r2
+	systemd_newunit "${FILESDIR}"/${PN}-ctrl-agent.service-r2 ${PN}-ctrl-agent.service
+	systemd_newunit "${FILESDIR}"/${PN}-dhcp-ddns.service-r2 ${PN}-dhcp-ddns.service
+	systemd_newunit "${FILESDIR}"/${PN}-dhcp4.service-r2 ${PN}-dhcp4.service
+	systemd_newunit "${FILESDIR}"/${PN}-dhcp6.service-r2 ${PN}-dhcp6.service
 
 	newtmpfiles "${FILESDIR}"/${PN}.tmpfiles.conf ${PN}.conf
 
