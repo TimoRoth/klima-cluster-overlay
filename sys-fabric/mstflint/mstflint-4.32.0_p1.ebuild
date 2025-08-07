@@ -26,12 +26,6 @@ RDEPEND="dev-db/sqlite:3=
 DEPEND="${RDEPEND}"
 S="${WORKDIR}/${PN}-${MY_PV}"
 
-PATCHES=(
-	"${FILESDIR}"/0001-fwctrl-include-missing-function-declarations.patch
-	"${FILESDIR}"/0002-fwctrl-fix-reg-status-typo.patch
-	"${FILESDIR}"/0003-dev_mgt-include-missing-function-declaration.patch
-)
-
 src_prepare() {
 	default
 	echo '#define TOOLS_GIT_SHA "'${EGIT_COMMIT}'"' > ./common/gitversion.h || die
