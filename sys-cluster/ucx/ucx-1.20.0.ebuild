@@ -1,4 +1,4 @@
-# Copyright 1999-2024 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -8,7 +8,7 @@ inherit autotools toolchain-funcs
 MY_PV=${PV/_/-}
 DESCRIPTION="Unified Communication X"
 HOMEPAGE="https://www.openucx.org"
-SRC_URI="https://github.com/openucx/ucx/releases/download/v${PV}/${P}.tar.gz"
+SRC_URI="https://github.com/openucx/ucx/releases/download/${PV}/${P}.tar.gz"
 S="${WORKDIR}/${PN}-${MY_PV}"
 
 LICENSE="BSD"
