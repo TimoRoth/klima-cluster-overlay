@@ -1,20 +1,25 @@
-# Copyright 1999-2025 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
 
 PYTHON_COMPAT=( python3_{11..14} )
-inherit eapi9-ver flag-o-matic meson python-r1 systemd tmpfiles toolchain-funcs
+VERIFY_SIG_OPENPGP_KEY_PATH=/usr/share/openpgp-keys/isc.asc
+inherit eapi9-ver flag-o-matic meson python-r1 systemd tmpfiles
+inherit toolchain-funcs verify-sig
 
 DESCRIPTION="High-performance production grade DHCPv4 & DHCPv6 server"
 HOMEPAGE="https://www.isc.org/kea/"
 
-if [[ ${PV} == *9999* ]]; then
+if [[ ${PV} == 9999 ]]; then
 	inherit git-r3
 	EGIT_REPO_URI="https://gitlab.isc.org/isc-projects/kea.git"
 else
-	SRC_URI="https://downloads.isc.org/isc/kea/${PV}/${P}.tar.xz"
-	KEYWORDS="~amd64 ~arm ~arm64 ~x86"
+	SRC_URI="
+		https://downloads.isc.org/isc/kea/${PV}/${P}.tar.xz
+		verify-sig? ( https://downloads.isc.org/isc/kea/${PV}/${P}.tar.xz.asc )
+	"
+	KEYWORDS="amd64 arm arm64 ~x86"
 fi
 
 LICENSE="MPL-2.0"
@@ -27,16 +32,14 @@ RESTRICT="!test? ( test )"
 COMMON_DEPEND="
 	>=dev-libs/boost-1.66:=
 	dev-libs/log4cplus:=
-	kerberos? (
-		virtual/krb5
-	)
+	kerberos? ( virtual/krb5 )
 	mysql? (
 		app-arch/zstd:=
 		dev-db/mysql-connector-c:=
 		dev-libs/openssl:=
-		sys-libs/zlib:=
+		virtual/zlib:=
 	)
-	!openssl? ( dev-libs/botan:2=[boost] )
+	!openssl? ( dev-libs/botan:3=[boost] )
 	openssl? ( dev-libs/openssl:0= )
 	postgres? ( dev-db/postgresql:* )
 	shell? ( ${PYTHON_DEPS} )
@@ -49,14 +52,16 @@ RDEPEND="${COMMON_DEPEND}
 	acct-user/dhcp
 "
 BDEPEND="
+	${PYTHON_DEPS}
 	>=dev-build/meson-1.8
+	virtual/pkgconfig
 	doc? (
 		$(python_gen_any_dep '
 			dev-python/sphinx[${PYTHON_USEDEP}]
 			dev-python/sphinx-rtd-theme[${PYTHON_USEDEP}]
 		')
 	)
-	virtual/pkgconfig
+	verify-sig? ( sec-keys/openpgp-keys-isc )
 "
 
 python_check_deps() {
@@ -66,31 +71,42 @@ python_check_deps() {
 }
 
 pkg_setup() {
-	if use doc || use shell; then
-		python_setup
+	python_setup
+}
+
+src_unpack() {
+	if [[ ${PV} == 9999 ]] ; then
+		git-r3_src_unpack
+		return
 	fi
+
+	if use verify-sig; then
+		verify-sig_verify_detached "${DISTDIR}"/${P}.tar.xz{,.asc}
+	fi
+
+	default
 }
 
 src_prepare() {
 	default
 
-	# Remove documentation from build
-	if use !doc; then
-		sed -e "/^subdir('doc')$/d" \
+	# Fix up all doc paths, whether or not we are installing full set of docs
+	sed -e "s:'doc/kea':'doc/${PF}':" \
 		-i meson.build || die
-	fi
+	sed -e "s:'share/doc/kea':'share/doc/${PF}':" \
+		-i doc/meson.build || die
+	sed -e "s:'doc/kea':'doc/${PF}':" \
+		-i doc/sphinx/meson.build || die
+	sed -e "s:share/doc/kea/:share/doc/${PF}/:" \
+		-i doc/sphinx/arm/install.rst || die
+	sed -e "s:share/doc/kea/examples:share/doc/${PF}/examples:" \
+		-i doc/sphinx/arm/config.rst || die
 
-	# Fix up doc path where examples go
-	sed -e "s:DATADIR / 'doc/kea':DATADIR / 'doc/${P}':" \
-		-i meson.build || die
-
-	# set shebang before meson if we are installing the shell
-	if use shell; then
-		sed -e 's:^#!@PYTHON@:#!/usr/bin/env python3:' \
+	# set shebang before meson whether or not we are installing the shell
+	sed -e 's:^#!@PYTHON@:#!/usr/bin/env python3:' \
 		-i src/bin/shell/kea-shell.in || die
-	fi
 
-	# Don't allow meson to install shell
+	# Don't allow meson to install shell, we shall do that if required
 	sed -e 's:install\: true:install\: false:' \
 		-i src/bin/shell/meson.build || die
 
@@ -106,15 +122,23 @@ src_configure() {
 	# Kea Devs say no to LTO
 	filter-lto
 
+	if use !openssl; then
+		append-cxxflags -std=c++20
+	fi
+
+	# Note: https://gitlab.isc.org/isc-projects/kea/-/issues/4171 suggests patching meson.build to set umask,
+	# instead here we pass install-umask as an argument to do the same thing, i.e. control permissions on
+	# installed files.
 	local emesonargs=(
 		--localstatedir="${EPREFIX}/var"
 		-Drunstatedir="${EPREFIX}/run"
+		$(meson_feature kerberos krb5)
 		-Dnetconf=disabled
 		-Dcrypto=$(usex openssl openssl botan)
-		$(meson_feature kerberos krb5)
 		$(meson_feature mysql)
 		$(meson_feature postgres postgresql)
 		$(meson_feature test tests)
+		--install-umask=0o023
 	)
 	if use debug; then
 		emesonargs+=(
@@ -124,16 +148,30 @@ src_configure() {
 	meson_src_configure
 }
 
+src_compile() {
+	meson_src_compile
+
+	# Note: If you want man pages doc use has to be set. This may change
+	# in the future and be like 2.6.3 where man pages were part of the release tarball
+	use doc && meson_src_compile doc
+}
+
 src_test() {
 	# Get list of all test suites into an associative array
-	# the meson test --list returns either "kea / test_suite", "kea:shell-tests / test_suite" or "kea:python-tests / test_suite"
+	# the meson test --list returns either "kea / test_suite", "kea:shell-tests / test_suite" or
+	# "kea:python-tests / test_suite"
+	# Note: In meson >= 1.10 the format has changed to
+	# the meson test --list returns either "kea:test_suite", "shell-tests - kea:test_suite" or
+	# "python-tests - kea:test_suite"
+	#
 	# Discard the shell tests as we can't run shell tests in sandbox
 
 	pushd "${BUILD_DIR}" || die
 	local -A TEST_SUITES
-	while IFS=" / " read -r subsystem test_suite ; do
-		if [[ ${subsystem} != "kea:shell-tests" ]]; then
-			TEST_SUITES["$test_suite"]=1
+
+	while IFS="/: " read -a words ; do
+		if [[ "${words[0]}" != "shell-tests" ]] && [[ "${words[2]}" != "shell-tests" ]]; then
+			TEST_SUITES["${words[-1]}"]=1
 		fi
 	done < <(meson test --list || die)
 	popd
@@ -146,14 +184,38 @@ src_test() {
 		kea-log-console_test.sh
 		dhcp-lease-query-tests
 		kea-dhcp6-tests
+		kea-dhcp4-tests
+		kea-dhcp-tests
 	)
+
+	# skip shell tests that require a running instance of MySQL
+	if use mysql; then
+		SKIP_TESTS+=(
+			kea-mysql-tests
+			dhcp-mysql-lib-tests
+			dhcp-forensic-log-libloadtests
+		)
+	fi
+
+	# skip shell tests that require a running instance of PgSQL
+	if use postgres; then
+		SKIP_TESTS+=(
+			kea-pgsql-tests
+			dhcp-pgsql-lib-tests
+			dhcp-forensic-log-libloadtests
+		)
+	fi
+
+	if use kerberos; then
+		SKIP_TESTS+=(
+			ddns-gss-tsig-tests
+		)
+	fi
 
 	if [[ $(tc-get-ptr-size) -eq 4 ]]; then
 		# see https://bugs.gentoo.org/958171 for reason for skipping these tests
 		SKIP_TESTS+=(
 			kea-util-tests
-			kea-dhcp-tests
-			kea-dhcp4-tests
 			kea-dhcpsrv-tests
 			dhcp-ha-lib-tests
 			kea-d2-tests
@@ -168,8 +230,8 @@ src_test() {
 }
 
 install_shell() {
-	python_domodule "${ORIG_BUILD_DIR}"/src/bin/shell/*.py
-	python_doscript "${ORIG_BUILD_DIR}"/src/bin/shell/kea-shell
+	python_domodule ${ORIG_BUILD_DIR}/src/bin/shell/*.py
+	python_doscript ${ORIG_BUILD_DIR}/src/bin/shell/kea-shell
 
 	# fix path to import kea modules
 	sed -e "/^sys.path.append/s|(.*)|('$(python_get_sitedir)/${PN}')|"	\
@@ -178,6 +240,15 @@ install_shell() {
 
 src_install() {
 	meson_install
+
+	# Tidy up
+	rm -r "${ED}"/usr/share/kea/meson-info || die
+	if use !mysql; then
+		rm -r "${ED}"/usr/share/kea/scripts/mysql || die
+	fi
+	if use !postgres; then
+		rm -r "${ED}"/usr/share/kea/scripts/pgsql || die
+	fi
 
 	# No easy way to control how meson_install sets permissions in meson < 1.9
 	# So make sure permissions are same as in previous versions of kea
@@ -188,26 +259,28 @@ src_install() {
 
 	if use shell; then
 		python_moduleinto ${PN}
-		ORIG_BUILD_DIR="${BUILD_DIR}" python_foreach_impl install_shell
+		ORIG_BUILD_DIR=${BUILD_DIR} python_foreach_impl install_shell
 	fi
 
-	dodoc -r doc/examples
+	# We don't use keactrl.conf so move to reduce confusion
+	mv "${ED}"/etc/${PN}/keactrl.conf "${ED}"/usr/share/doc/${PF}/examples/keactrl.conf || die
 
-	diropts -m 0750 -o root -g dhcp
-	dodir /etc/kea
-	insopts -m 0640 -o root -g dhcp
-	insinto /etc/kea
-	newins doc/examples/agent/comments.json kea-ctrl-agent.conf.sample
-	newins doc/examples/kea6/simple.json kea-dhcp6.conf.sample
-	newins doc/examples/kea4/single-subnet.json kea-dhcp4.conf.sample
-	newins doc/examples/ddns/comments.json kea-dhcp-ddns.conf.sample
+	fowners -R root:dhcp /etc/${PN}
 
-	# set log to syslog by default
-	sed -e 's/"output": "stdout"/"output": "syslog"/' \
-		-i "${ED}"/etc/kea/*.conf.sample || die
+	# A side effect of using install_umask 023 in meson setup is setting config files to be world readable
+	# lets not do that
+	fperms -R 0750 /etc/${PN}
+	chmod 0640 "${ED}"/etc/${PN}/*.conf || die
 
-	newconfd "${FILESDIR}"/${PN}-confd-r2 ${PN}
-	newinitd "${FILESDIR}"/${PN}-initd-r2 ${PN}
+	# Install a conf per service and a linked init script per service
+	newinitd "${FILESDIR}"/${PN}-initd-r3 ${PN}
+	local svc
+	for svc in dhcp4 dhcp6 dhcp-ddns ctrl-agent; do
+		newconfd "${FILESDIR}"/${PN}-confd-r3 kea-${svc}
+		sed -e "s:@KEA_SVC@:${svc}:g" \
+			-i "${ED}"/etc/conf.d/kea-${svc} || die
+		dosym kea "${EPREFIX}"/etc/init.d/kea-${svc}
+	done
 
 	systemd_newunit "${FILESDIR}"/${PN}-ctrl-agent.service-r2 ${PN}-ctrl-agent.service
 	systemd_newunit "${FILESDIR}"/${PN}-dhcp-ddns.service-r2 ${PN}-dhcp-ddns.service
@@ -238,9 +311,22 @@ pkg_postinst() {
 		ewarn "Please check your configuration!"
 	fi
 
+	if ver_replacing -lt 3.0; then
+		ewarn "Make sure that ${EPREFIX}/var/lib/kea and all the files in it are owned by dhcp:"
+		ewarn "chown -R dhcp:dhcp ${EPREFIX}/var/lib/kea"
+		ewarn
+		ewarn "If using openrc;"
+		ewarn "  There are now separate conf.d scripts and associated init.d per daemon!"
+		ewarn "    Each Daemon needs to be launched separately, i.e. the daemons are"
+		ewarn "      kea-dhcp4"
+		ewarn "      kea-dhcp6"
+		ewarn "      kea-dhcp-ddns"
+		ewarn "      kea-ctrl"
+		ewarn "Please adjust your service startups appropriately"
+	fi
+
 	if ! has_version net-misc/kea; then
-		elog "See config files in:"
-		elog "  ${EROOT}/etc/kea/*.sample"
+		elog "See examples of config files in:"
 		elog "  ${EROOT}/usr/share/doc/${PF}/examples"
 	fi
 }
