@@ -242,7 +242,6 @@ src_install() {
 	meson_install
 
 	# Tidy up
-	rm -r "${ED}"/usr/share/kea/meson-info || die
 	if use !mysql; then
 		rm -r "${ED}"/usr/share/kea/scripts/mysql || die
 	fi
