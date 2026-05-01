@@ -41,7 +41,8 @@ PATCHES=(
 src_prepare() {
 	default
 
-	# For our patches
+	sed -i 's/enable_libknet_sctp="yes"/enable_libknet_sctp="no"/' configure.ac || die
+
 	eautoreconf
 }
 
@@ -64,5 +65,5 @@ src_configure() {
 		$(use_enable test functional-tests)
 	)
 
-	econf "${myeconfargs[@]}" enable_libknet_sctp=no
+	econf "${myeconfargs[@]}"
 }
