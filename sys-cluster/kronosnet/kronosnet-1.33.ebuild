@@ -64,5 +64,5 @@ src_configure() {
 		$(use_enable test functional-tests)
 	)
 
-	econf "${myeconfargs[@]}"
+	econf "${myeconfargs[@]}" enable_libknet_sctp=no
 }
