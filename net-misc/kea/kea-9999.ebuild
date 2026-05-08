@@ -274,14 +274,13 @@ src_install() {
 	# Install a conf per service and a linked init script per service
 	newinitd "${FILESDIR}"/${PN}-initd-r3 ${PN}
 	local svc
-	for svc in dhcp4 dhcp6 dhcp-ddns ctrl-agent; do
+	for svc in dhcp4 dhcp6 dhcp-ddns; do
 		newconfd "${FILESDIR}"/${PN}-confd-r3 kea-${svc}
 		sed -e "s:@KEA_SVC@:${svc}:g" \
 			-i "${ED}"/etc/conf.d/kea-${svc} || die
 		dosym kea "${EPREFIX}"/etc/init.d/kea-${svc}
 	done
 
-	systemd_newunit "${FILESDIR}"/${PN}-ctrl-agent.service-r2 ${PN}-ctrl-agent.service
 	systemd_newunit "${FILESDIR}"/${PN}-dhcp-ddns.service-r2 ${PN}-dhcp-ddns.service
 	systemd_newunit "${FILESDIR}"/${PN}-dhcp4.service-r2 ${PN}-dhcp4.service
 	systemd_newunit "${FILESDIR}"/${PN}-dhcp6.service-r2 ${PN}-dhcp6.service
@@ -303,7 +302,6 @@ pkg_postinst() {
 		ewarn "    /etc/kea/kea-dhcp4.conf"
 		ewarn "    /etc/kea/kea-dhcp6.conf"
 		ewarn "    /etc/kea/kea-dhcp-ddns.conf"
-		ewarn "    /etc/kea/kea-ctrl-agent.conf"
 		ewarn
 		ewarn "  Daemons are launched by default with the unprivileged user 'dhcp'"
 		ewarn
@@ -320,7 +318,6 @@ pkg_postinst() {
 		ewarn "      kea-dhcp4"
 		ewarn "      kea-dhcp6"
 		ewarn "      kea-dhcp-ddns"
-		ewarn "      kea-ctrl"
 		ewarn "Please adjust your service startups appropriately"
 	fi
 
