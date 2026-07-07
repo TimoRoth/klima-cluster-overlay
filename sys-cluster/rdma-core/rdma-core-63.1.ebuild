@@ -3,7 +3,7 @@
 
 EAPI=8
 
-PYTHON_COMPAT=( python3_{11..14} )
+PYTHON_COMPAT=( python3_{12..14} )
 
 inherit cmake perl-functions python-single-r1 udev systemd
 
@@ -67,12 +67,6 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-39.0-RDMA_BuildType.patch
 )
 
-src_prepare() {
-	# DEFINED is true even if the value is false, which makes lttng unconditional
-	sed -i -e 's/if (DEFINED ENABLE_LTTNG)/if (ENABLE_LTTNG)/' CMakeLists.txt || die
-	cmake_src_prepare
-}
-
 src_configure() {
 	perl_set_version
 
@@ -84,7 +78,7 @@ src_configure() {
 		-DCMAKE_INSTALL_UDEV_RULESDIR="${EPREFIX}$(get_udevdir)"/rules.d
 		-DCMAKE_INSTALL_SYSTEMD_SERVICEDIR="$(systemd_get_systemunitdir)"
 		-DCMAKE_DISABLE_FIND_PACKAGE_Systemd="$(usex !systemd)"
-		-DENABLE_LTTNG="$(usex lttng)"
+		-DTRACING="$(usex lttng LTTNG None)"
 		-DENABLE_VALGRIND="$(usex valgrind)"
 		-DENABLE_RESOLVE_NEIGH="$(usex neigh)"
 		-DENABLE_STATIC="$(usex static-libs)"
