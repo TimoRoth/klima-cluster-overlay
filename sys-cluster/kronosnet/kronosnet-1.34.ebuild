@@ -52,6 +52,7 @@ src_configure() {
 
 		--enable-libnozzle
 		--disable-libknet-sctp
+		--disable-wireshark-dissector
 		--enable-compress-zlib
 		--enable-compress-bzip2
 		--enable-compress-lzma
