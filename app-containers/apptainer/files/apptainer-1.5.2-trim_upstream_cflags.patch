@@ -1,6 +1,8 @@
+diff --git a/mconfig b/mconfig
+index d367a364e..9bef82c8b 100755
 --- a/mconfig
 +++ b/mconfig
-@@ -42,14 +42,14 @@
+@@ -41,14 +41,14 @@ tgtstatic=0
  
  # user_cflags - user-defined CFLAGS without all the cflags_opts
  user_cflags="$CFLAGS"
@@ -17,8 +19,10 @@
  ldflags=$LDFLAGS
  
  package_name=apptainer
+diff --git a/mlocal/frags/go_runtime_opts.mk b/mlocal/frags/go_runtime_opts.mk
+index 999178501..23b43aae9 100644
 --- a/mlocal/frags/go_runtime_opts.mk
 +++ b/mlocal/frags/go_runtime_opts.mk
 @@ -1 +1 @@
--CGO_CFLAGS += -O2 -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -fstack-protector --param ssp-buffer-size=4
-+CGO_CFLAGS += -O2 -Wformat -Wformat-security -fstack-protector --param ssp-buffer-size=4
+-CGO_CPPFLAGS += -O2 -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -fstack-protector --param ssp-buffer-size=4
++CGO_CPPFLAGS += -O2 -Wformat -Wformat-security -fstack-protector --param ssp-buffer-size=4
