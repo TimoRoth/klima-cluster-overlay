@@ -17,7 +17,7 @@ else
 	fi
 	MY_P="${PN}-${MY_PV}"
 	INHERIT_GIT=""
-	SRC_URI="https://github.com/SchedMD/slurm/archive/${MY_P}.tar.gz"
+	SRC_URI="https://github.com/SchedMD/slurm/releases/download/${MY_P}/${PN}-$(ver_cut 1-3).tar.bz2"
 	KEYWORDS="~amd64"
 fi
 
