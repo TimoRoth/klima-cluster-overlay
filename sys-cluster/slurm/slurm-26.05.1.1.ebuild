@@ -11,13 +11,14 @@ if [[ ${PV} == *9999* ]]; then
 	MY_P="${P}"
 else
 	if [[ ${PV} == *pre* || ${PV} == *rc* ]]; then
-		MY_PV=$(ver_rs '-0.') # pre-releases or release-candidate
+		DL_PV=$(ver_rs '-0.') # pre-releases or release-candidate
 	else
-		MY_PV=$(ver_rs 1-4 '-') # stable releases
+		DL_PV=$(ver_rs 1-4 '-') # stable releases
 	fi
+	MY_PV="$(ver_cut 1-3)"
 	MY_P="${PN}-${MY_PV}"
 	INHERIT_GIT=""
-	SRC_URI="https://github.com/SchedMD/slurm/releases/download/${MY_P}/${PN}-$(ver_cut 1-3).tar.bz2"
+	SRC_URI="https://github.com/SchedMD/slurm/releases/download/${PN}-${DL_PV}/${MY_P}.tar.bz2"
 	KEYWORDS="~amd64"
 fi
 
@@ -69,7 +70,7 @@ RDEPEND="${COMMON_DEPEND}
 REQUIRED_USE="lua? ( ${LUA_REQUIRED_USE} )
 	torque? ( perl )"
 
-S="${WORKDIR}/${PN}-${MY_P}"
+S="${WORKDIR}/${MY_P}"
 
 LIBSLURM_PERL_S="${S}/contribs/perlapi/libslurm/perl"
 LIBSLURMDB_PERL_S="${S}/contribs/perlapi/libslurmdb/perl"
