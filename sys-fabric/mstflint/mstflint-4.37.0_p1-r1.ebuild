@@ -9,10 +9,10 @@ DESCRIPTION="Mstflint - an open source version of MFT (Mellanox Firmware Tools)"
 HOMEPAGE="https://github.com/Mellanox/mstflint"
 LICENSE="|| ( GPL-2 BSD-2 )"
 KEYWORDS="~amd64 ~x86"
-EGIT_COMMIT="b9d9e844a14ae1c85cb90c76ccd4a56a0eccd599"
+EGIT_COMMIT="1b8ac4b520390563ff0822d472a54895d033d143"
 MY_PV=${PV/_p/-}
 MY_P=""
-SRC_URI="https://github.com/Mellanox/mstflint/archive/v${MY_PV}.tar.gz -> ${P}.tar.gz"
+SRC_URI="https://github.com/Mellanox/mstflint/archive/v${MY_PV}.1.tar.gz -> ${P}.1.tar.gz"
 IUSE="adb-generic-tools inband ssl"
 SLOT="0"
 RDEPEND="dev-db/sqlite:3=
