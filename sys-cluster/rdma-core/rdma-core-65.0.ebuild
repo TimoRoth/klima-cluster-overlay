@@ -23,7 +23,7 @@ SLOT="0"
 IUSE="lttng neigh python static-libs systemd valgrind"
 REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} )"
 
-COMMON_DEPEND="
+RDEPEND="
 	dev-lang/perl:=
 	virtual/libudev:=
 	lttng? ( dev-util/lttng-ust:= )
@@ -33,29 +33,12 @@ COMMON_DEPEND="
 	python? ( ${PYTHON_DEPS} )
 "
 DEPEND="
-	${COMMON_DEPEND}
+	${RDEPEND}
 	python? (
 		$(python_gen_cond_dep '
 			dev-python/cython[${PYTHON_USEDEP}]
 		')
 	)
-"
-RDEPEND="${COMMON_DEPEND}
-	!sys-fabric/infiniband-diags
-	!sys-fabric/libibverbs
-	!sys-fabric/librdmacm
-	!sys-fabric/libibumad
-	!sys-fabric/ibacm
-	!sys-fabric/libibmad
-	!sys-fabric/srptools
-	!sys-fabric/infinipath-psm
-	!sys-fabric/libcxgb3
-	!sys-fabric/libcxgb4
-	!sys-fabric/libmthca
-	!sys-fabric/libmlx4
-	!sys-fabric/libmlx5
-	!sys-fabric/libocrdma
-	!sys-fabric/libnes
 "
 # python is required unconditionally at build-time
 BDEPEND="
@@ -65,6 +48,7 @@ BDEPEND="
 
 PATCHES=(
 	"${FILESDIR}"/${PN}-39.0-RDMA_BuildType.patch
+	"${FILESDIR}"/${PN}-65.0-lttng-static.patch
 )
 
 src_configure() {
