@@ -1,4 +1,4 @@
-# Copyright 1999-2019 Gentoo Authors
+# Copyright 1999-2026 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI=8
@@ -7,8 +7,8 @@ inherit autotools systemd
 
 DESCRIPTION="Cluster synchronization tool"
 HOMEPAGE="https://github.com/LINBIT/csync2"
-MY_SNAPSHOT="83b36449abb4c2903ef3b40b46018240633989e0"
-SRC_URI="https://github.com/LINBIT/${PN}/archive/${MY_SNAPSHOT}.tar.gz -> ${P}-github.tar.gz"
+MY_SNAPSHOT="253bfc485f7ffc4efe7c7e5d1ec34554ddc9c897"
+SRC_URI="https://github.com/LINBIT/${PN}/archive/${MY_SNAPSHOT}.tar.gz -> ${P}-r2-github.tar.gz"
 
 LICENSE="GPL-2"
 KEYWORDS="~amd64 ~arm ~x86"
