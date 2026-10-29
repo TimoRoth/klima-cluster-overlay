@@ -18,7 +18,7 @@ IUSE="+network rootless +seccomp suid systemd"
 QA_FLAGS_IGNORED='.*'
 
 DEPEND="app-crypt/gpgme
-	>=dev-lang/go-1.23.6
+	>=dev-lang/go-1.25.6
 	dev-libs/openssl
 	sys-apps/util-linux
 	sys-fs/cryptsetup
@@ -34,13 +34,12 @@ BDEPEND="virtual/pkgconfig"
 
 CONFIG_CHECK="~SQUASHFS"
 
-PATCHES=(
-	"${FILESDIR}"/${PN}-1.5.2-trim_upstream_cflags.patch
-)
-
 DOCS=( README.md CONTRIBUTORS.md CONTRIBUTING.md )
 
 src_configure() {
+
+	sed -i -e 's/-D_FORTIFY_SOURCE=2//' mlocal/frags/go_runtime_opts.mk || die  # is set by Gentoo
+
 	tc-export PKG_CONFIG
 	local myconfargs=(
 		-c "$(tc-getBUILD_CC)"
